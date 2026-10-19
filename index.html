@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>墨龍飛天</title>
+<style>
+:root{
+  --paper:#f2ece0; --paper2:#e8e0d0; --ink:#1c1b19; --ink2:#5b5750; --ink3:#8d887e; --red:#b8362b;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU","Source Han Serif TC",serif;
+  --kai:"Kaiti TC","BiauKai","DFKai-SB","KaiTi","Noto Serif TC",serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font-family:var(--serif);overflow:hidden;overscroll-behavior:none;user-select:none;-webkit-user-select:none}
+#app{position:fixed;inset:0;height:100dvh;touch-action:none}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+[hidden]{display:none!important}
+
+/* 抬頭顯示 */
+#hud{position:absolute;left:0;right:0;top:0;padding:calc(10px + env(safe-area-inset-top)) 14px 0;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
+#hud>*{pointer-events:none}
+#scoreBox .num{font-size:30px;line-height:1;font-weight:700;letter-spacing:1px}
+#scoreBox small{display:block;font-size:11px;color:var(--ink2);margin-top:3px}
+#themeChip{position:absolute;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top));text-align:center;background:rgba(242,236,224,.78);border:1px solid var(--ink3);border-radius:999px;padding:5px 16px;font-size:14px;white-space:nowrap}
+#themeChip small{display:block;font-size:10px;color:var(--ink2)}
+#rightBox{display:flex;align-items:center;gap:10px}
+#hearts{font-size:20px;color:var(--red);letter-spacing:3px}
+#hearts .off{color:var(--ink3);opacity:.55}
+#gear{pointer-events:auto!important;width:38px;height:38px;border-radius:50%;border:1px solid var(--ink3);background:rgba(242,236,224,.78);font-size:19px;line-height:1;color:var(--ink);display:grid;place-items:center;cursor:pointer}
+#toast{position:absolute;left:50%;top:24%;transform:translateX(-50%);font-size:26px;letter-spacing:4px;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s}
+#toast small{display:block;font-size:12px;letter-spacing:1px;color:var(--ink2);margin-top:4px}
+#toast.on{opacity:1}
+
+/* 畫面（選單、結果、設定） */
+.screen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto}
+.card{width:100%;max-width:380px;background:rgba(242,236,224,.88);border:1px solid var(--ink3);border-radius:18px;padding:26px 22px 22px;text-align:center;box-shadow:0 8px 30px rgba(28,27,25,.12)}
+h1{margin:0;font-family:var(--kai);font-size:46px;letter-spacing:8px;font-weight:700;line-height:1.1}
+h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2px;color:var(--ink2);font-weight:400;margin-top:6px}
+.sub{font-size:14px;line-height:1.7;margin:14px 0 4px;color:var(--ink)}
+.sub small{display:block;font-size:11.5px;line-height:1.55;color:var(--ink2);margin-top:3px}
+.lbl{font-size:14px;margin:16px 0 8px}
+.lbl small{display:block;font-size:11px;color:var(--ink2)}
+.btn{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;max-width:300px;height:54px;margin:12px auto 0;border-radius:999px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);font:inherit;font-size:18px;letter-spacing:3px;cursor:pointer;line-height:1.15}
+.btn small{font-size:10.5px;letter-spacing:0;opacity:.8}
+.btn.ghost{background:transparent;color:var(--ink)}
+.opt{display:flex;flex-direction:column;align-items:center;justify-content:center;height:46px;padding:0 14px;border-radius:999px;border:1px solid var(--ink3);background:transparent;color:var(--ink);font:inherit;font-size:15px;cursor:pointer;line-height:1.1}
+.opt small{font-size:10px;color:var(--ink2)}
+.opt.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.opt.on small{color:var(--paper);opacity:.8}
+.row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.themes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.themes .opt{padding:0 4px}
+.zh{display:block}
+.namebox{width:100%;max-width:300px;height:44px;border-radius:999px;border:1px solid var(--ink3);background:rgba(255,255,255,.4);text-align:center;font:inherit;font-size:15px;color:var(--ink);margin:0 auto;display:block}
+.ver{margin-top:14px;font-size:10px;color:var(--ink3)}
+#res .big{font-size:56px;font-weight:700;line-height:1.1;margin:10px 0 2px}
+#res .stat{font-size:13px;color:var(--ink2);margin-top:6px}
+#res .cmt{font-size:18px;margin:12px 0 2px;font-family:var(--kai)}
+#res .cmt small{display:block;font-size:12px;color:var(--ink2);font-family:var(--serif)}
+#res .rec{color:var(--red);font-size:15px;margin-top:8px;letter-spacing:2px}
+#lbBox{margin-top:12px;font-size:13px;text-align:left}
+.dlgBg{background:rgba(28,27,25,.35)}
+.setrow{margin-top:14px;text-align:center}
+.setrow .l{font-size:13px;margin-bottom:6px}
+.setrow .l small{color:var(--ink2);font-size:10.5px;margin-left:4px}
+.setrow .opt{height:40px;font-size:14px}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="c"></canvas>
+
+  <div id="hud" hidden>
+    <div id="scoreBox"><div class="num" id="scoreNum">0</div><small id="altNum"></small></div>
+    <div id="themeChip"></div>
+    <div id="rightBox"><div id="hearts"></div><button id="gear" aria-label="settings">⚙</button></div>
+  </div>
+  <div id="toast"></div>
+
+  <!-- 選單 -->
+  <div class="screen" id="menu">
+    <div class="card">
+      <h1><span data-i18n-zh="title"></span><small data-i18n-sm="title"></small></h1>
+      <div class="sub" data-i18n="subtitle"></div>
+      <div class="lbl" data-i18n="chooseTheme"></div>
+      <div class="themes" id="themeGrid"></div>
+      <div class="lbl" data-i18n="name"></div>
+      <input class="namebox" id="nameInp" maxlength="12">
+      <button class="btn" id="startBtn" data-i18n="start"></button>
+      <button class="btn ghost" id="menuGear" data-i18n="settings"></button>
+      <div class="sub" data-i18n="dragHint" style="margin-top:16px"></div>
+      <div class="ver">v1-0</div>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="screen" id="res" hidden>
+    <div class="card">
+      <div data-i18n="score" class="lbl" style="margin:0"></div>
+      <div class="big" id="resScore">0</div>
+      <div class="stat" id="resStat"></div>
+      <div class="rec" id="resRec" hidden></div>
+      <div class="cmt" id="resCmt"></div>
+      <div id="lbBox" hidden></div>
+      <button class="btn" id="againBtn" data-i18n="again"></button>
+      <button class="btn ghost" id="toMenuBtn" data-i18n="toMenu"></button>
+    </div>
+  </div>
+
+  <!-- 設定 -->
+  <div class="screen dlgBg" id="dlg" hidden>
+    <div class="card">
+      <div style="font-size:20px;letter-spacing:3px" data-i18n="settings"></div>
+      <div class="setrow"><div class="l" data-i18n="optScript"></div><div class="row" id="gScript">
+        <button class="opt" data-v="trad">繁體</button><button class="opt" data-v="simp">简体</button></div></div>
+      <div class="setrow"><div class="l" data-i18n="optLang"></div><div class="row" id="gLang">
+        <button class="opt" data-v="es">中＋ES</button><button class="opt" data-v="en">中＋EN</button><button class="opt" data-v="zh">中</button></div></div>
+      <div class="setrow"><div class="l" data-i18n="optPhon"></div><div class="row" id="gPhon">
+        <button class="opt" data-v="pinyin">拼音</button><button class="opt" data-v="zhuyin">注音</button><button class="opt" data-v="both" data-i18n-opt="both"></button><button class="opt" data-v="off" data-i18n-opt="off"></button></div></div>
+      <div class="setrow"><div class="l" data-i18n="optRate"></div><div class="row" id="gRate">
+        <button class="opt" data-v="slow" data-i18n-opt="slow"></button><button class="opt" data-v="normal" data-i18n-opt="normal"></button><button class="opt" data-v="fast" data-i18n-opt="fast"></button></div></div>
+      <button class="btn" id="dlgDone" data-i18n="done"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* =====================================================================
+   一、共用設定（和 跑吧／色數／比比看 同一把 localStorage 鑰匙）
+   ===================================================================== */
+const SETTINGS_KEY = 'hanziGames.settings';
+const SET_OPTS = { script:['trad','simp'], lang:['es','en','zh'], phon:['pinyin','zhuyin','both','off'], rate:['slow','normal','fast'] };
+const RATE_VALUE = { slow:0.75, normal:0.92, fast:1.1 };
+function readSettings(){
+  const out = { v:1, script:'trad', lang:'es', phon:'pinyin', rate:'normal' };
+  let saved = null;
+  try{ saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null'); }catch(e){}
+  if(saved && typeof saved === 'object'){
+    Object.keys(SET_OPTS).forEach(k=>{ if(SET_OPTS[k].includes(saved[k])) out[k] = saved[k]; });
+  }
+  return out;
+}
+function writeSettings(o){
+  try{
+    let cur = {};
+    try{ cur = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') || {}; }catch(e){}
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(Object.assign(cur, { v:1, script:o.script, lang:o.lang, phon:o.phon, rate:o.rate })));
+  }catch(e){}
+}
+const S = readSettings();
+
+/* =====================================================================
+   二、介面文字：[繁體, 简体, Español, English]
+   ===================================================================== */
+const I18N = {
+  title:['墨龍飛天','墨龙飞天','El dragón de tinta','Ink Dragon'],
+  subtitle:['往上飛，只吃主題裡的字。吃錯的字，龍會受傷。','往上飞，只吃主题里的字。吃错的字，龙会受伤。',
+    'Vuela hacia arriba y come solo las palabras del tema. Las equivocadas hieren al dragón.','Fly upward and eat only the words of the theme. Wrong words hurt the dragon.'],
+  chooseTheme:['選一個主題','选一个主题','Elige un tema','Pick a theme'],
+  name:['你的名字','你的名字','Tu nombre','Your name'],
+  start:['開始飛','开始飞','Empezar','Start'],
+  settings:['基本設定','基本设置','Ajustes','Settings'],
+  dragHint:['👆 手指在畫面上拖動，龍就跟著移動。電腦：方向鍵、WASD 或滑鼠拖動。','👆 手指在画面上拖动，龙就跟着移动。电脑：方向键、WASD 或鼠标拖动。',
+    'Arrastra el dedo por la pantalla para mover al dragón. En computadora: flechas, WASD o arrastra con el ratón.','Drag your finger on the screen to move the dragon. On a computer: arrow keys, WASD or drag with the mouse.'],
+  eatOnly:['只吃：','只吃：','Solo come: ','Only eat: '],
+  alt:['高度','高度','Altura','Height'],
+  up:['再飛高一點！','再飞高一点！','¡Más alto!','Higher!'],
+  score:['得分','得分','Puntos','Score'],
+  again:['再飛一次','再飞一次','Volar otra vez','Fly again'],
+  toMenu:['主選單','主菜单','Menú principal','Main menu'],
+  done:['完成','完成','Listo','Done'],
+  best:['最高分','最高分','Récord','Best'],
+  newRec:['新紀錄！','新纪录！','¡Nuevo récord!','New record!'],
+  eaten:['吃對','吃对','Aciertos','Correct'],
+  optScript:['字形','字形','Escritura','Script'],
+  optLang:['翻譯','翻译','Traducción','Translation'],
+  optPhon:['讀音','读音','Pronunciación','Reading'],
+  optRate:['語速','语速','Velocidad de voz','Voice speed'],
+  both:['兩個','两个','Ambos','Both'],
+  off:['關','关','No','Off'],
+  slow:['慢','慢','Lento','Slow'],
+  normal:['中','中','Normal','Normal'],
+  fast:['快','快','Rápido','Fast'],
+  c0:['下次再來，龍在等你。','下次再来，龙在等你。','La próxima vez, el dragón te espera.','Next time — the dragon is waiting.'],
+  c1:['龍剛展翅，繼續加油。','龙刚展翅，继续加油。','El dragón apenas despliega las alas. ¡Sigue!','The dragon is just spreading its wings. Keep going!'],
+  c2:['飛得不錯！','飞得不错！','¡Buen vuelo!','Nice flight!'],
+  c3:['乘雲而上，真厲害！','乘云而上，真厉害！','¡Subes entre las nubes, genial!','Riding the clouds — great!'],
+  c4:['龍騰九天！','龙腾九天！','¡El dragón surca los cielos!','The dragon soars the heavens!'],
+};
+function pair(key){
+  const e = I18N[key]; if(!e) return ['',''];
+  const zh = S.script === 'simp' ? e[1] : e[0];
+  const sm = S.lang === 'zh' ? '' : (S.lang === 'en' ? e[3] : e[2]);
+  return [zh, sm];
+}
+// 雙行：上面中文，下面小字西文或英文；「只有中文」就只有一行
+function fill(el, key){
+  const [zh, sm] = pair(key);
+  el.innerHTML = '<span class="zh">'+zh+'</span>' + (sm ? '<small>'+sm+'</small>' : '');
+}
+
+/* =====================================================================
+   三、主題字庫  [繁, 简, 拼音, 西文, 英文]
+   ===================================================================== */
+const THEMES = [
+  { id:'food', name:['食物','食物','Comida','Food'], words:[
+    ['米飯','米饭','mǐfàn','arroz','rice'],['麵','面','miàn','fideos','noodles'],['包子','包子','bāozi','bao (pan al vapor)','steamed bun'],
+    ['餃子','饺子','jiǎozi','dumplings','dumplings'],['蛋','蛋','dàn','huevo','egg'],['牛肉','牛肉','niúròu','carne de res','beef'],
+    ['豆腐','豆腐','dòufu','tofu','tofu'],['麵包','面包','miànbāo','pan','bread'],['湯','汤','tāng','sopa','soup'],
+    ['魚','鱼','yú','pescado','fish'],['青菜','青菜','qīngcài','verduras','greens'],['蛋糕','蛋糕','dàngāo','pastel','cake'] ]},
+  { id:'fruit', name:['水果','水果','Frutas','Fruit'], words:[
+    ['蘋果','苹果','píngguǒ','manzana','apple'],['香蕉','香蕉','xiāngjiāo','plátano','banana'],['西瓜','西瓜','xīguā','sandía','watermelon'],
+    ['葡萄','葡萄','pútáo','uvas','grapes'],['芒果','芒果','mángguǒ','mango','mango'],['橘子','橘子','júzi','mandarina','tangerine'],
+    ['草莓','草莓','cǎoméi','fresa','strawberry'],['鳳梨','凤梨','fènglí','piña','pineapple'],['檸檬','柠檬','níngméng','limón','lemon'],
+    ['梨子','梨子','lízi','pera','pear'],['桃子','桃子','táozi','durazno','peach'],['木瓜','木瓜','mùguā','papaya','papaya'] ]},
+  { id:'animal', name:['動物','动物','Animales','Animals'], words:[
+    ['狗','狗','gǒu','perro','dog'],['貓','猫','māo','gato','cat'],['鳥','鸟','niǎo','pájaro','bird'],
+    ['馬','马','mǎ','caballo','horse'],['牛','牛','niú','vaca','cow'],['豬','猪','zhū','cerdo','pig'],
+    ['羊','羊','yáng','oveja','sheep'],['兔子','兔子','tùzi','conejo','rabbit'],['老虎','老虎','lǎohǔ','tigre','tiger'],
+    ['猴子','猴子','hóuzi','mono','monkey'],['大象','大象','dàxiàng','elefante','elephant'],['熊貓','熊猫','xióngmāo','panda','panda'] ]},
+  { id:'color', name:['顏色','颜色','Colores','Colors'], words:[
+    ['紅色','红色','hóngsè','rojo','red'],['藍色','蓝色','lánsè','azul','blue'],['綠色','绿色','lǜsè','verde','green'],
+    ['黃色','黄色','huángsè','amarillo','yellow'],['白色','白色','báisè','blanco','white'],['黑色','黑色','hēisè','negro','black'],
+    ['紫色','紫色','zǐsè','morado','purple'],['粉紅色','粉红色','fěnhóngsè','rosa','pink'],['橘色','橘色','júsè','naranja','orange'],
+    ['灰色','灰色','huīsè','gris','gray'],['咖啡色','咖啡色','kāfēisè','café','brown'],['金色','金色','jīnsè','dorado','gold'] ]},
+  { id:'transport', name:['交通','交通','Transporte','Transport'], words:[
+    ['公車','公车','gōngchē','autobús','bus'],['捷運','捷运','jiéyùn','metro','MRT'],['火車','火车','huǒchē','tren','train'],
+    ['飛機','飞机','fēijī','avión','airplane'],['計程車','计程车','jìchéngchē','taxi','taxi'],['腳踏車','脚踏车','jiǎotàchē','bicicleta','bicycle'],
+    ['機車','机车','jīchē','moto','scooter'],['汽車','汽车','qìchē','carro','car'],['船','船','chuán','barco','boat'],
+    ['高鐵','高铁','gāotiě','tren bala','high-speed rail'],['卡車','卡车','kǎchē','camión','truck'] ]},
+  { id:'body', name:['身體','身体','Cuerpo','Body'], words:[
+    ['頭','头','tóu','cabeza','head'],['手','手','shǒu','mano','hand'],['腳','脚','jiǎo','pie','foot'],
+    ['眼睛','眼睛','yǎnjing','ojos','eyes'],['耳朵','耳朵','ěrduo','oreja','ear'],['鼻子','鼻子','bízi','nariz','nose'],
+    ['嘴巴','嘴巴','zuǐba','boca','mouth'],['肚子','肚子','dùzi','barriga','belly'],['牙齒','牙齿','yáchǐ','dientes','teeth'],
+    ['頭髮','头发','tóufa','cabello','hair'],['肩膀','肩膀','jiānbǎng','hombro','shoulder'],['膝蓋','膝盖','xīgài','rodilla','knee'] ]},
+];
+
+/* 拼音（帶聲調符號）→ 注音（和 跑吧 同一份轉換器） */
+const ZY = (function(){
+  var INI = {b:'ㄅ',p:'ㄆ',m:'ㄇ',f:'ㄈ',d:'ㄉ',t:'ㄊ',n:'ㄋ',l:'ㄌ',g:'ㄍ',k:'ㄎ',h:'ㄏ',j:'ㄐ',q:'ㄑ',x:'ㄒ',zh:'ㄓ',ch:'ㄔ',sh:'ㄕ',r:'ㄖ',z:'ㄗ',c:'ㄘ',s:'ㄙ'};
+  var FIN = {a:'ㄚ',o:'ㄛ',e:'ㄜ',ê:'ㄝ',ai:'ㄞ',ei:'ㄟ',ao:'ㄠ',ou:'ㄡ',an:'ㄢ',en:'ㄣ',ang:'ㄤ',eng:'ㄥ',er:'ㄦ',
+    i:'ㄧ',ia:'ㄧㄚ',io:'ㄧㄛ',ie:'ㄧㄝ',iao:'ㄧㄠ',iu:'ㄧㄡ',iou:'ㄧㄡ',ian:'ㄧㄢ',in:'ㄧㄣ',iang:'ㄧㄤ',ing:'ㄧㄥ',
+    u:'ㄨ',ua:'ㄨㄚ',uo:'ㄨㄛ',uai:'ㄨㄞ',ui:'ㄨㄟ',uei:'ㄨㄟ',uan:'ㄨㄢ',un:'ㄨㄣ',uen:'ㄨㄣ',uang:'ㄨㄤ',ong:'ㄨㄥ',ueng:'ㄨㄥ',
+    v:'ㄩ',ve:'ㄩㄝ',van:'ㄩㄢ',vn:'ㄩㄣ',iong:'ㄩㄥ'};
+  var MARK = ['','','ˊ','ˇ','ˋ'];
+  function one(syl){
+    var s = syl.normalize('NFD'), tone = 5;
+    if(/̄/.test(s)) tone = 1; else if(/́/.test(s)) tone = 2; else if(/̌/.test(s)) tone = 3; else if(/̀/.test(s)) tone = 4;
+    s = s.replace(/ü/g,'v').replace(/Ü/g,'v').replace(/[̀-ͯ]/g,'').replace(/ü/g,'v').toLowerCase();
+    if(!/^[a-zê]+$/.test(s)) return syl;
+    var ini = '', rest = s, m;
+    if(s === 'n' || s === 'm'){ var zz = s === 'n' ? 'ㄣ' : 'ㄇㄨ'; return tone === 5 ? '˙' + zz : zz + MARK[tone]; }
+    if(s === 'er' || s === 'r'){ rest = 'er'; }
+    else if((m = s.match(/^(zh|ch|sh|[bpmfdtnlgkhjqxrzcs])/))){ ini = m[1]; rest = s.slice(ini.length); }
+    else if(s[0] === 'y'){
+      rest = s.slice(1);
+      if(/^u/.test(rest)) rest = rest.replace(/^u/, 'v');
+      else if(rest === 'i' || rest === 'in' || rest === 'ing') rest = rest;
+      else rest = 'i' + rest;
+    } else if(s[0] === 'w'){
+      rest = s.slice(1);
+      rest = (rest === 'u') ? 'u' : 'u' + rest;
+    }
+    if(ini && /^[jqx]$/.test(ini)) rest = rest.replace(/^u/, 'v');
+    if(/^(zh|ch|sh|r|z|c|s)$/.test(ini) && rest === 'i') rest = '';
+    var f = rest === '' ? '' : FIN[rest];
+    if(f === undefined) return syl;
+    var z = (ini ? INI[ini] : '') + f;
+    return tone === 5 ? '˙' + z : z + MARK[tone];
+  }
+  function conv(py){ return String(py||'').trim().split(/\s+/).filter(Boolean).map(one).join(' '); }
+  // 「mǐfàn」這種連在一起的拼音，先拆成音節
+  function split(py){
+    var out = [], cur = '';
+    var VOW = /[aeiouüāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/i;
+    for(var i=0;i<py.length;i++){
+      cur += py[i];
+      var next = py[i+1];
+      if(next === undefined){ out.push(cur); cur=''; break; }
+      if(VOW.test(py[i]) && !VOW.test(next)){
+        // 母音後面接子音：看那個子音是要留在這個音節（n、ng、r），還是開下一個音節
+        var rest = py.slice(i+1);
+        var keep = 0;
+        if(/^ng(?![aeiouüāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ])/i.test(rest)) keep = 2;
+        else if(/^n(?![aeiouüāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ])/i.test(rest)) keep = 1;
+        else if(/^r(?![aeiouüāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ])/i.test(rest)) keep = 1;
+        if(keep){ cur += rest.slice(0,keep); i += keep; }
+        out.push(cur); cur = '';
+      } else if(VOW.test(py[i]) && VOW.test(next)){
+        // 兩個母音相連：ai ei ao ou ia ie iao iu ua uo ui 等，留在同一音節
+        continue;
+      }
+    }
+    if(cur) out.push(cur);
+    return out;
+  }
+  function convWord(py){ return split(py).map(one).join(' '); }
+  return { one: one, conv: conv, word: convWord };
+})();
+
+/* =====================================================================
+   四、畫面與狀態
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const cv = $('c'), ctx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+function resize(){
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  if(dragon.pts.length) clampTarget();
+}
+const FONT_WORD = '"Kaiti TC","BiauKai","DFKai-SB","KaiTi","Noto Serif TC",serif';
+const FONT_UI = '"Noto Serif TC","Songti TC","PMingLiU",serif';
+const lerp = (a,b,t)=>a+(b-a)*t;
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const rnd = (a,b)=>a+Math.random()*(b-a);
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+let state = 'menu';            // menu | play | over
+let paused = false;
+let themeIdx = 0;
+try{ const t = localStorage.getItem('dragonInk.theme'); const i = THEMES.findIndex(x=>x.id===t); if(i>=0) themeIdx = i; }catch(e){}
+
+// 遊戲數值
+let score=0, hearts=3, combo=0, correct=0, wrongCount=0, level=0, scroll=0, speed=70, spawnAcc=0, time=0;
+const MAX_HEARTS = 3;
+let items=[], parts=[], floats=[], shake=0, mouthT=0, hurtT=0;
+let bagGood=[], bagBad=[];
+let rafId=0, lastT=0;
+
+/* ---- 龍 ---- */
+const dragon = { x:0, y:0, tx:0, ty:0, vx:0, pts:[] };
+const SEG_N = 26, SEG_GAP = 13;
+function initDragon(){
+  dragon.x = dragon.tx = W/2; dragon.y = dragon.ty = H*0.78; dragon.vx = 0;
+  dragon.pts = [];
+  for(let i=0;i<SEG_N;i++) dragon.pts.push({ x:dragon.x, y:dragon.y + i*SEG_GAP });
+}
+function clampTarget(){
+  dragon.tx = clamp(dragon.tx, 34, W-34);
+  dragon.ty = clamp(dragon.ty, H*0.5, H*0.88);
+}
+
+/* =====================================================================
+   五、字的產生
+   ===================================================================== */
+function curTheme(){ return THEMES[themeIdx]; }
+function wText(w){ return S.script === 'simp' ? w[1] : w[0]; }
+function wRead(w){
+  if(S.phon === 'off') return '';
+  const py = w[2], zy = ZY.word(py);
+  return S.phon === 'pinyin' ? py : S.phon === 'zhuyin' ? zy : py + '  ' + zy;
+}
+function wTrans(w){ return S.lang === 'es' ? w[3] : S.lang === 'en' ? w[4] : ''; }
+function fontSizeFor(text){ const n = [...text].length; return n <= 1 ? 30 : n === 2 ? 26 : n === 3 ? 22 : 18; }
+function measureItem(it){
+  it.text = wText(it.w);
+  it.fs = fontSizeFor(it.text);
+  ctx.font = '700 '+it.fs+'px '+FONT_WORD;
+  const tw = ctx.measureText(it.text).width;
+  it.r = Math.max(30, tw/2 + 15);
+  it.read = wRead(it.w);
+  it.trans = wTrans(it.w);
+}
+function refillBags(){
+  const th = curTheme();
+  if(!bagGood.length) bagGood = shuffle(th.words.slice());
+  if(!bagBad.length){
+    const others = []; THEMES.forEach((t,i)=>{ if(i!==themeIdx) others.push(...t.words); });
+    bagBad = shuffle(others);
+  }
+}
+function pickWord(good){
+  refillBags();
+  const bag = good ? bagGood : bagBad;
+  // 盡量不要和畫面上已經有的字重複
+  for(let k=0;k<bag.length;k++){
+    const w = bag[bag.length-1-k];
+    if(!items.some(it=>it.w===w)){ bag.splice(bag.length-1-k,1); return w; }
+  }
+  return bag.pop();
+}
+function anyGoodOnScreen(){ return items.some(it=>it.good && !it.gone && it.y < H*0.95); }
+
+function newItem(good){
+  const w = pickWord(good);
+  const it = { w, good, x:0, y:0, blob:Array.from({length:14},()=>rnd(.9,1.1)), rot:rnd(0,6.28), ph:rnd(0,6.28), gone:false };
+  measureItem(it);
+  return it;
+}
+function placeItem(it){
+  const m = it.r + 8;
+  for(let tries=0; tries<14; tries++){
+    const x = rnd(m, W-m);
+    const y = -it.r - 30;
+    let ok = true;
+    for(const o of items){
+      if(o.gone) continue;
+      if(Math.abs(o.y - y) < o.r + it.r + 60 && Math.abs(o.x - x) < o.r + it.r + 24){ ok = false; break; }
+    }
+    if(ok){ it.x = x; it.bx = x; it.y = y; return true; }
+  }
+  return false;
+}
+function spawnRow(){
+  let n = Math.random() < 0.55 ? 1 : 2;
+  if(level >= 3 && Math.random() < 0.3) n = 3;
+  for(let k=0;k<n;k++){
+    const needGood = !anyGoodOnScreen();
+    const good = needGood ? true : Math.random() < 0.42;
+    const it = newItem(good);
+    if(placeItem(it)) items.push(it);
+    else { // 放不下：把字放回袋子
+      (good ? bagGood : bagBad).push(it.w);
+    }
+  }
+}
+
+/* =====================================================================
+   六、聲音（輕輕的撥弦聲）與語音
+   ===================================================================== */
+let AC = null;
+function ensureAudio(){
+  try{
+    if(!AC){ const C = window.AudioContext || window.webkitAudioContext; if(C) AC = new C(); }
+    if(AC && AC.state === 'suspended') AC.resume();
+  }catch(e){}
+}
+function tone(freq, dur, type, vol){
+  if(!AC) return;
+  try{
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type||'triangle'; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol||0.12, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime+dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime+dur+0.02);
+  }catch(e){}
+}
+function sfxGood(){ tone(659,0.35,'triangle',0.13); setTimeout(()=>tone(988,0.4,'triangle',0.1),70); }
+function sfxBad(){ tone(150,0.3,'sawtooth',0.1); }
+function sfxUp(){ tone(523,0.25,'sine',0.1); setTimeout(()=>tone(784,0.25,'sine',0.1),110); setTimeout(()=>tone(1046,0.4,'sine',0.1),220); }
+function sfxEnd(){ tone(392,0.5,'triangle',0.12); setTimeout(()=>tone(294,0.6,'triangle',0.12),220); }
+let voices = [];
+function loadVoices(){ try{ voices = speechSynthesis.getVoices() || []; }catch(e){ voices = []; } }
+if('speechSynthesis' in window){ loadVoices(); try{ speechSynthesis.onvoiceschanged = loadVoices; }catch(e){} }
+function speak(text){
+  if(!('speechSynthesis' in window)) return;
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-TW'; u.rate = RATE_VALUE[S.rate] || 0.92;
+    const v = voices.find(v=>/zh[-_]TW/i.test(v.lang)) || voices.find(v=>/^zh/i.test(v.lang));
+    if(v) u.voice = v;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* =====================================================================
+   七、排行榜接口（之後接 Firebase，只要把 enabled 改 true、補上兩個函式）
+   ===================================================================== */
+const LEADERBOARD = {
+  enabled: false,
+  async submit(entry){ /* TODO: 寫入 Firestore。entry = {name, theme, score, correct, altitude, ts} */ },
+  async top(theme, n){ /* TODO: 回傳 [{name, score}, ...] */ return []; },
+};
+
+/* =====================================================================
+   八、遊戲流程
+   ===================================================================== */
+function startGame(){
+  ensureAudio();
+  score=0; hearts=MAX_HEARTS; combo=0; correct=0; wrongCount=0; level=0; scroll=0; spawnAcc=0; time=0;
+  speed = 130; items=[]; parts=[]; floats=[]; shake=0; mouthT=0; hurtT=0; bagGood=[]; bagBad=[];
+  initDragon();
+  state = 'play'; paused = false;
+  $('menu').hidden = true; $('res').hidden = true; $('hud').hidden = false;
+  renderHud(); renderThemeChip();
+  lastT = performance.now();
+}
+function levelSpeed(){ return Math.min(330, 130 + level*16); }
+function gapDist(){ return Math.max(95, 135 - level*5); }
+
+function eat(it){
+  it.gone = true;
+  const r = it.r;
+  if(it.good){
+    correct++; combo++;
+    const mult = 1 + Math.floor(combo/5);
+    const pts = 10*mult;
+    score += pts;
+    mouthT = 0.25;
+    inkSplash(it.x, it.y, 14, 1, false);
+    floats.push({ x:it.x, y:it.y-r, txt:'+'+pts, life:0.9, max:0.9, red:false });
+    sfxGood(); speak(it.text);
+    if(correct % 8 === 0){ level++; speed = levelSpeed(); showToast('up'); sfxUp(); }
+    renderHud();
+  } else {
+    hearts--; combo = 0; wrongCount++;
+    shake = 0.35; hurtT = 0.5;
+    inkSplash(it.x, it.y, 26, 1.6, true);
+    sfxBad();
+    try{ navigator.vibrate && navigator.vibrate(60); }catch(e){}
+    renderHud();
+    if(hearts <= 0) endGame();
+  }
+}
+function inkSplash(x,y,n,k,red){
+  for(let i=0;i<n;i++){
+    const a = rnd(0,6.28), v = rnd(40,260)*k;
+    parts.push({ x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v - 30, r:rnd(2,7)*k*0.8, life:rnd(0.5,1.0), max:1.0, red: red && Math.random()<0.25 });
+  }
+}
+function endGame(){
+  state = 'over';
+  sfxEnd();
+  const alt = Math.floor(scroll/12);
+  let best = 0, rec = false;
+  const key = 'dragonInk.best.'+curTheme().id;
+  try{ best = parseInt(localStorage.getItem(key)||'0',10) || 0; }catch(e){}
+  if(score > best){ rec = score > 0; best = score; try{ localStorage.setItem(key, String(best)); }catch(e){} }
+  setTimeout(()=>{
+    $('hud').hidden = true;
+    $('res').hidden = false;
+    $('resScore').textContent = score;
+    const [eZh] = pair('eaten'), [aZh] = pair('alt'), [bZh] = pair('best');
+    $('resStat').textContent = eZh+' '+correct+'　·　'+aZh+' '+alt+' m　·　'+bZh+' '+best;
+    $('resRec').hidden = !rec; $('resRec').innerHTML = rec ? pair('newRec')[0] : '';
+    const ck = correct<=0?'c0':correct<10?'c1':correct<25?'c2':correct<50?'c3':'c4';
+    fill($('resCmt'), ck);
+    $('lbBox').hidden = !LEADERBOARD.enabled;
+  }, 600);
+  const entry = { name: ($('nameInp').value||'').trim() || '玩家', theme: curTheme().id, score, correct, altitude: alt, ts: Date.now() };
+  try{ if(LEADERBOARD.enabled && score>0) LEADERBOARD.submit(entry); }catch(e){}
+}
+function toMenu(){
+  state = 'menu'; paused = false;
+  $('res').hidden = true; $('hud').hidden = true; $('menu').hidden = false;
+  items=[]; parts=[]; floats=[]; speed=70; initDragon();
+}
+
+/* =====================================================================
+   九、更新
+   ===================================================================== */
+const held = { l:false, r:false, u:false, d:false };
+function update(dt){
+  time += dt;
+  const playing = state === 'play';
+  const spd = playing ? speed : 55;
+  scroll += spd*dt;
+
+  if(playing){
+    let dx = (held.r?1:0)-(held.l?1:0), dy = (held.d?1:0)-(held.u?1:0);
+    if(dx||dy){ const L = Math.hypot(dx,dy); dragon.tx += dx/L*430*dt; dragon.ty += dy/L*300*dt; clampTarget(); }
+  } else {
+    dragon.tx = W/2 + Math.sin(time*0.7)*W*0.18; dragon.ty = H*0.78 + Math.sin(time*1.1)*10;
+  }
+  const px = dragon.x;
+  dragon.x += (dragon.tx-dragon.x)*Math.min(1,dt*12);
+  dragon.y += (dragon.ty-dragon.y)*Math.min(1,dt*12);
+  dragon.vx = (dragon.x-px)/Math.max(dt,0.001);
+
+  // 龍身：後一節跟著前一節
+  const P = dragon.pts;
+  P[0].x = dragon.x; P[0].y = dragon.y;
+  for(let i=1;i<P.length;i++){
+    const a = P[i-1], b = P[i];
+    b.y += ((a.y+SEG_GAP)-b.y)*Math.min(1,dt*4);
+    b.x += (a.x-b.x)*Math.min(1,dt*9);
+    const dx = a.x-b.x, dy = a.y-b.y, d = Math.hypot(dx,dy) || 1;
+    if(d > SEG_GAP){ b.x = a.x - dx/d*SEG_GAP; b.y = a.y - dy/d*SEG_GAP; }
+  }
+
+  if(mouthT>0) mouthT -= dt;
+  if(hurtT>0) hurtT -= dt;
+  if(shake>0) shake -= dt;
+
+  if(playing){
+    spawnAcc += spd*dt;
+    if(spawnAcc >= gapDist()){ spawnAcc = 0; spawnRow(); }
+    const hx = dragon.x, hy = dragon.y - 10;
+    for(let i=items.length-1;i>=0;i--){
+      const it = items[i];
+      if(it.gone){ items.splice(i,1); continue; }
+      it.y += spd*dt;
+      it.x = it.bx + Math.sin(time*1.6 + it.ph)*7;
+      if(Math.hypot(it.x-hx, it.y-hy) < it.r*0.78 + 20){
+        eat(it);
+        if(state !== 'play') break;
+        continue;
+      }
+      if(it.y > H + it.r + 50) items.splice(i,1);
+    }
+  } else {
+    items.length = 0;
+  }
+  for(let i=parts.length-1;i>=0;i--){
+    const p = parts[i];
+    p.life -= dt; if(p.life<=0){ parts.splice(i,1); continue; }
+    p.vy += 260*dt; p.x += p.vx*dt; p.y += p.vy*dt; p.vx *= (1-dt*1.5);
+  }
+  for(let i=floats.length-1;i>=0;i--){
+    const f = floats[i]; f.life -= dt; f.y -= 40*dt;
+    if(f.life<=0) floats.splice(i,1);
+  }
+}
+
+/* =====================================================================
+   十、畫水墨
+   ===================================================================== */
+// 宣紙紋路：事先畫一小塊，鋪滿全畫面
+const paperTile = (function(){
+  const c = document.createElement('canvas'); c.width = c.height = 160;
+  const g = c.getContext('2d');
+  g.fillStyle = '#f2ece0'; g.fillRect(0,0,160,160);
+  for(let i=0;i<900;i++){
+    g.fillStyle = 'rgba('+(120+Math.random()*60|0)+','+(110+Math.random()*50|0)+','+(90+Math.random()*40|0)+','+(Math.random()*0.07)+')';
+    g.fillRect(Math.random()*160, Math.random()*160, Math.random()*2.2+0.4, Math.random()*0.8+0.3);
+  }
+  for(let i=0;i<14;i++){
+    g.strokeStyle = 'rgba(160,145,120,'+(Math.random()*0.07)+')'; g.lineWidth = 0.6;
+    g.beginPath(); const y = Math.random()*160; g.moveTo(0,y); g.lineTo(160, y+Math.random()*6-3); g.stroke();
+  }
+  return c;
+})();
+let paperPat = null;
+
+function nz(x, seed){ return (Math.sin(x+seed) + 0.55*Math.sin(x*2.3+seed*1.7) + 0.28*Math.sin(x*5.1+seed*0.6) + 1.83) / 3.66; }
+const LAYERS = [
+  { par:0.18, a:0.10, w:0.14, amp:0.10, f:0.0045, seedL:1.0, seedR:7.3 },
+  { par:0.38, a:0.17, w:0.10, amp:0.11, f:0.0060, seedL:3.1, seedR:11.9 },
+  { par:0.70, a:0.30, w:0.05, amp:0.10, f:0.0085, seedL:5.7, seedR:2.2 },
+];
+function drawCliffs(){
+  for(const L of LAYERS){
+    const sc = scroll*L.par;
+    for(const side of [0,1]){
+      const seed = side ? L.seedR : L.seedL;
+      const maxW = W*(L.w+L.amp);
+      ctx.beginPath();
+      ctx.moveTo(side ? W : 0, -12);
+      for(let y=-12; y<=H+12; y+=10){
+        const wy = y - sc;
+        const e = W*(L.w + L.amp*nz(wy*L.f, seed));
+        ctx.lineTo(side ? W-e : e, y);
+      }
+      ctx.lineTo(side ? W : 0, H+12);
+      ctx.closePath();
+      const g = ctx.createLinearGradient(side ? W : 0, 0, side ? W-maxW : maxW, 0);
+      g.addColorStop(0, 'rgba(28,27,25,'+L.a*1.5+')');
+      g.addColorStop(0.55, 'rgba(28,27,25,'+L.a+')');
+      g.addColorStop(1, 'rgba(28,27,25,'+(L.a*0.35)+')');
+      ctx.fillStyle = g; ctx.fill();
+    }
+  }
+}
+function drawMist(){
+  for(let i=0;i<6;i++){
+    const span = H + 240;
+    const y = ((i*span/6 + scroll*(0.42 + (i%3)*0.12)) % span) - 120;
+    const w = W*(0.9 + (i%3)*0.25), h = 70 + (i%3)*26;
+    const x = W*(0.2 + ((i*0.37)%0.7)) + Math.sin(time*0.2 + i)*20;
+    ctx.save(); ctx.translate(x,y); ctx.scale(1, h/w);
+    const g = ctx.createRadialGradient(0,0,0,0,0,w/2);
+    g.addColorStop(0,'rgba(242,236,224,0.62)'); g.addColorStop(1,'rgba(242,236,224,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0,0,w/2,0,6.283); ctx.fill(); ctx.restore();
+  }
+}
+function drawBackground(){
+  if(!paperPat) paperPat = ctx.createPattern(paperTile,'repeat');
+  ctx.fillStyle = '#f2ece0'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = paperPat; ctx.fillRect(0,0,W,H);
+  // 朱紅的太陽：整幅畫唯一的顏色
+  const sr = Math.min(W,H)*0.085, sx = W*0.7, sy = H*0.15 + Math.sin(scroll*0.002)*4;
+  const sg = ctx.createRadialGradient(sx,sy,sr*0.2,sx,sy,sr*1.25);
+  sg.addColorStop(0,'rgba(184,54,43,0.82)'); sg.addColorStop(0.78,'rgba(184,54,43,0.78)'); sg.addColorStop(1,'rgba(184,54,43,0)');
+  ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(sx,sy,sr*1.25,0,6.283); ctx.fill();
+  drawCliffs();
+  drawMist();
+  // 上下漸暈，像水墨畫的邊
+  const tg = ctx.createLinearGradient(0,0,0,H*0.18);
+  tg.addColorStop(0,'rgba(242,236,224,0.55)'); tg.addColorStop(1,'rgba(242,236,224,0)');
+  ctx.fillStyle = tg; ctx.fillRect(0,0,W,H*0.18);
+}
+
+function blobPath(x,y,r,radii,rot){
+  const n = radii.length, P = [];
+  for(let i=0;i<n;i++){ const a = rot + i/n*6.2832; P.push([x+Math.cos(a)*r*radii[i], y+Math.sin(a)*r*radii[i]]); }
+  const mid = (a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];
+  ctx.beginPath();
+  const m0 = mid(P[n-1],P[0]); ctx.moveTo(m0[0],m0[1]);
+  for(let i=0;i<n;i++){ const p = P[i], m = mid(P[i],P[(i+1)%n]); ctx.quadraticCurveTo(p[0],p[1],m[0],m[1]); }
+  ctx.closePath();
+}
+function drawItems(){
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for(const it of items){
+    // 淡淡的暈
+    blobPath(it.x, it.y, it.r*1.22, it.blob, it.rot+0.4);
+    ctx.fillStyle = 'rgba(28,27,25,0.10)'; ctx.fill();
+    blobPath(it.x, it.y, it.r, it.blob, it.rot);
+    ctx.fillStyle = 'rgba(28,27,25,0.93)'; ctx.fill();
+    ctx.font = '700 '+it.fs+'px '+FONT_WORD;
+    ctx.fillStyle = '#f2ece0';
+    ctx.fillText(it.text, it.x, it.y+1);
+    let yy = it.y + it.r + 14;
+    if(it.read){ ctx.font = '600 13px '+FONT_UI; ctx.fillStyle = '#3a3733'; ctx.fillText(it.read, it.x, yy); yy += 15; }
+    if(it.trans){ ctx.font = '11px '+FONT_UI; ctx.fillStyle = '#6a665d'; ctx.fillText(it.trans, it.x, yy); }
+  }
+}
+function drawParts(){
+  for(const p of parts){
+    const a = clamp(p.life/p.max,0,1);
+    ctx.fillStyle = p.red ? 'rgba(184,54,43,'+(0.8*a)+')' : 'rgba(28,27,25,'+(0.85*a)+')';
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r*(0.5+0.5*a),0,6.283); ctx.fill();
+  }
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for(const f of floats){
+    const a = clamp(f.life/f.max,0,1);
+    ctx.font = '700 22px '+FONT_UI; ctx.fillStyle = 'rgba(28,27,25,'+a+')';
+    ctx.fillText(f.txt, f.x, f.y);
+  }
+}
+
+function drawDragon(){
+  const P = dragon.pts, N = P.length;
+  const wig = P.map((p,i)=> Math.sin(time*4.2 - i*0.5) * 5 * Math.min(1, i/6));
+  // 雲（龍飛過的水氣）
+  ctx.save();
+  ctx.globalAlpha = 0.5;
+  for(let i=3;i<N;i+=4){
+    const g = ctx.createRadialGradient(P[i].x+wig[i],P[i].y,0,P[i].x+wig[i],P[i].y,34);
+    g.addColorStop(0,'rgba(242,236,224,0.7)'); g.addColorStop(1,'rgba(242,236,224,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(P[i].x+wig[i],P[i].y,34,0,6.283); ctx.fill();
+  }
+  ctx.restore();
+  // 背鰭
+  for(let i=2;i<N-3;i+=2){
+    const p = P[i], q = P[i-1];
+    const dx = p.x+wig[i]-(q.x+wig[i-1]), dy = p.y-q.y, d = Math.hypot(dx,dy)||1;
+    const nx = -dy/d, ny = dx/d, k = i/N, h = lerp(11,3,k);
+    ctx.fillStyle = 'rgba(28,27,25,'+lerp(0.85,0.4,k)+')';
+    ctx.beginPath();
+    ctx.moveTo(p.x+wig[i]+nx*6*(1-k)-dx/d*3, p.y+ny*6*(1-k)-dy/d*3);
+    ctx.lineTo(p.x+wig[i]+nx*(6*(1-k)+h)+dx/d*4, p.y+ny*(6*(1-k)+h)+dy/d*4);
+    ctx.lineTo(p.x+wig[i]+nx*6*(1-k)+dx/d*6, p.y+ny*6*(1-k)+dy/d*6);
+    ctx.fill();
+  }
+  // 身體：像毛筆一筆一筆畫出來，越往尾巴越細越淡
+  ctx.lineCap = 'round';
+  for(let i=N-1;i>=1;i--){
+    const k = i/N, w = lerp(19,2.2,Math.pow(k,0.85));
+    ctx.strokeStyle = 'rgba(28,27,25,'+lerp(0.96,0.5,k)+')';
+    ctx.lineWidth = w;
+    ctx.beginPath(); ctx.moveTo(P[i-1].x+wig[i-1],P[i-1].y); ctx.lineTo(P[i].x+wig[i],P[i].y); ctx.stroke();
+  }
+  // 腹部留白：飛白的筆觸
+  for(let i=N-2;i>=2;i--){
+    const k = i/N;
+    ctx.strokeStyle = 'rgba(242,236,224,'+lerp(0.28,0.1,k)+')';
+    ctx.lineWidth = lerp(6,1,k);
+    ctx.beginPath(); ctx.moveTo(P[i-1].x+wig[i-1]-2,P[i-1].y); ctx.lineTo(P[i].x+wig[i]-2,P[i].y); ctx.stroke();
+  }
+  // 尾巴的小毛
+  const tl = P[N-1], tx = tl.x+wig[N-1];
+  ctx.strokeStyle = 'rgba(28,27,25,0.5)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(tx,tl.y); ctx.quadraticCurveTo(tx+9*Math.sin(time*3),tl.y+10,tx+4,tl.y+22); ctx.stroke();
+
+  // 頭
+  const tilt = clamp(dragon.vx*0.0016, -0.45, 0.45);
+  ctx.save();
+  ctx.translate(dragon.x, dragon.y); ctx.rotate(tilt);
+  const hurt = hurtT > 0 && Math.floor(hurtT*20)%2 === 0;
+  const ink = hurt ? 'rgba(184,54,43,0.95)' : 'rgba(28,27,25,0.97)';
+  // 鬃毛（朱紅一點點）
+  ctx.strokeStyle = 'rgba(184,54,43,0.78)'; ctx.lineWidth = 2.2;
+  for(let s=-1;s<=1;s+=2){
+    for(let j=0;j<3;j++){
+      ctx.beginPath(); ctx.moveTo(s*10,-2+j*4);
+      ctx.bezierCurveTo(s*(24+j*4),6+j*5+Math.sin(time*5+j)*3, s*(30+j*5),22+j*6, s*(26+j*3),34+j*7+Math.sin(time*4+j*2)*4);
+      ctx.stroke();
+    }
+  }
+  // 角
+  ctx.strokeStyle = ink; ctx.lineWidth = 3.2;
+  for(let s=-1;s<=1;s+=2){
+    ctx.beginPath(); ctx.moveTo(s*6,-10); ctx.quadraticCurveTo(s*20,-16,s*25,2);
+    ctx.moveTo(s*17,-14); ctx.lineTo(s*24,-24); ctx.stroke();
+  }
+  // 臉
+  ctx.fillStyle = ink;
+  ctx.beginPath(); ctx.ellipse(0,0,16,19,0,0,6.283); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(0,-22,11,13,0,0,6.283); ctx.fill();
+  // 嘴巴（吃到字時張開）
+  if(mouthT > 0){
+    ctx.fillStyle = '#f2ece0'; ctx.beginPath(); ctx.ellipse(0,-30,6.5,6,0,0,6.283); ctx.fill();
+    ctx.fillStyle = 'rgba(184,54,43,0.85)'; ctx.beginPath(); ctx.ellipse(0,-28,3.8,3,0,0,6.283); ctx.fill();
+  }
+  // 鼻孔和眼睛
+  ctx.fillStyle = '#f2ece0';
+  ctx.beginPath(); ctx.ellipse(-8,-8,4.6,3,-0.3,0,6.283); ctx.ellipse(8,-8,4.6,3,0.3,0,6.283); ctx.fill();
+  ctx.fillStyle = hurt ? '#1c1b19' : 'rgba(184,54,43,0.95)';
+  ctx.beginPath(); ctx.arc(-8,-8,2.2,0,6.283); ctx.arc(8,-8,2.2,0,6.283); ctx.fill();
+  // 鬍鬚
+  ctx.strokeStyle = 'rgba(28,27,25,0.8)'; ctx.lineWidth = 1.5;
+  for(let s=-1;s<=1;s+=2){
+    const w = Math.sin(time*3.5)*6;
+    ctx.beginPath(); ctx.moveTo(s*8,-26);
+    ctx.bezierCurveTo(s*(26+w),-34, s*(34+w),-14, s*(46+w*1.3),-6+w);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function render(){
+  ctx.save();
+  if(shake>0){ const m = shake*18; ctx.translate(rnd(-m,m), rnd(-m,m)); }
+  drawBackground();
+  drawItems();
+  drawDragon();
+  drawParts();
+  ctx.restore();
+}
+
+/* =====================================================================
+   十一、介面
+   ===================================================================== */
+function renderHud(){
+  $('scoreNum').textContent = score;
+  let h = '';
+  for(let i=0;i<MAX_HEARTS;i++) h += i < hearts ? '●' : '<span class="off">●</span>';
+  $('hearts').innerHTML = h;
+}
+function renderThemeChip(){
+  const t = curTheme(), e = t.name;
+  const zh = S.script === 'simp' ? e[1] : e[0];
+  const sm = S.lang === 'zh' ? '' : (S.lang === 'en' ? e[3] : e[2]);
+  const [lz, ls] = pair('eatOnly');
+  $('themeChip').innerHTML = '<span class="zh">'+lz+zh+'</span>' + (sm ? '<small>'+ls+sm+'</small>' : '');
+}
+function renderAlt(){
+  if(state === 'play'){ $('altNum').textContent = pair('alt')[0]+' '+Math.floor(scroll/12)+' m'; }
+}
+let toastTimer = 0;
+function showToast(key){
+  fill($('toast'), key); $('toast').classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>$('toast').classList.remove('on'), 1100);
+}
+function buildThemeGrid(){
+  const g = $('themeGrid'); g.innerHTML = '';
+  THEMES.forEach((t,i)=>{
+    const b = document.createElement('button');
+    b.className = 'opt' + (i===themeIdx ? ' on' : '');
+    const zh = S.script === 'simp' ? t.name[1] : t.name[0];
+    const sm = S.lang === 'zh' ? '' : (S.lang === 'en' ? t.name[3] : t.name[2]);
+    b.innerHTML = '<span class="zh">'+zh+'</span>' + (sm ? '<small>'+sm+'</small>' : '');
+    b.addEventListener('click', ()=>{
+      themeIdx = i;
+      try{ localStorage.setItem('dragonInk.theme', t.id); }catch(e){}
+      buildThemeGrid();
+    });
+    g.appendChild(b);
+  });
+}
+function applyLang(){
+  document.documentElement.lang = S.script === 'simp' ? 'zh-Hans' : 'zh-Hant';
+  document.querySelectorAll('[data-i18n]').forEach(el=>fill(el, el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-opt]').forEach(el=>{
+    const [zh, sm] = pair(el.dataset.i18nOpt);
+    el.innerHTML = '<span class="zh">'+zh+'</span>' + (sm ? '<small>'+sm+'</small>' : '');
+  });
+  const t = $('menu').querySelector('h1');
+  const [tz, ts] = pair('title');
+  t.innerHTML = tz + (ts ? '<small>'+ts+'</small>' : '');
+  buildThemeGrid(); renderThemeChip(); renderHud();
+  items.forEach(measureItem);
+  document.title = tz;
+}
+function markGroup(id, val){ document.querySelectorAll('#'+id+' .opt').forEach(b=>b.classList.toggle('on', b.dataset.v === val)); }
+function syncSettingsUI(){ markGroup('gScript',S.script); markGroup('gLang',S.lang); markGroup('gPhon',S.phon); markGroup('gRate',S.rate); }
+[['gScript','script'],['gLang','lang'],['gPhon','phon'],['gRate','rate']].forEach(([id,k])=>{
+  document.querySelectorAll('#'+id+' .opt').forEach(b=>b.addEventListener('click', ()=>{
+    S[k] = b.dataset.v; writeSettings(S); syncSettingsUI(); applyLang();
+  }));
+});
+let dlgFromPlay = false;
+function openSettings(){
+  if($('dlg').hidden === false) return;
+  dlgFromPlay = (state === 'play');
+  if(dlgFromPlay) paused = true;
+  syncSettingsUI(); $('dlg').hidden = false;
+}
+function closeSettings(){
+  $('dlg').hidden = true;
+  if(dlgFromPlay){ paused = false; lastT = performance.now(); }
+}
+$('gear').addEventListener('click', openSettings);
+$('menuGear').addEventListener('click', openSettings);
+$('dlgDone').addEventListener('click', closeSettings);
+$('startBtn').addEventListener('click', ()=>{
+  try{ localStorage.setItem('dragonInk.name', $('nameInp').value.trim()); }catch(e){}
+  startGame();
+});
+$('againBtn').addEventListener('click', startGame);
+$('toMenuBtn').addEventListener('click', toMenu);
+try{ $('nameInp').value = localStorage.getItem('dragonInk.name') || ''; }catch(e){}
+$('nameInp').placeholder = '玩家';
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden && state === 'play') openSettings(); });
+
+/* ---- 輸入：手指／滑鼠相對拖動、方向鍵 ---- */
+let dragging = false, lastPX = 0, lastPY = 0;
+cv.addEventListener('pointerdown', e=>{
+  if(state !== 'play' || paused) return;
+  dragging = true; lastPX = e.clientX; lastPY = e.clientY;
+  try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+});
+cv.addEventListener('pointermove', e=>{
+  if(!dragging || state !== 'play' || paused) return;
+  dragon.tx += (e.clientX-lastPX)*1.15; dragon.ty += (e.clientY-lastPY)*1.15;
+  lastPX = e.clientX; lastPY = e.clientY; clampTarget();
+});
+['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n, ()=>{ dragging = false; }));
+function keyDir(e, v){
+  switch(e.key){
+    case 'ArrowLeft': case 'a': case 'A': held.l = v; break;
+    case 'ArrowRight': case 'd': case 'D': held.r = v; break;
+    case 'ArrowUp': case 'w': case 'W': held.u = v; break;
+    case 'ArrowDown': case 's': case 'S': held.d = v; break;
+    default: return false;
+  }
+  return true;
+}
+window.addEventListener('keydown', e=>{
+  if(e.target && e.target.tagName === 'INPUT') return;
+  if(keyDir(e,true)) e.preventDefault();
+  if(e.key === 'Escape' && state === 'play'){ $('dlg').hidden ? openSettings() : closeSettings(); }
+});
+window.addEventListener('keyup', e=>{ keyDir(e,false); });
+window.addEventListener('blur', ()=>{ held.l=held.r=held.u=held.d=false; });
+
+/* =====================================================================
+   十二、主迴圈
+   ===================================================================== */
+function loop(t){
+  const dt = Math.min(0.05, Math.max(0,(t-lastT)/1000));
+  lastT = t;
+  if(!paused) update(dt);
+  render();
+  if(state === 'play' && !paused) renderAlt();
+  rafId = requestAnimationFrame(loop);
+}
+window.addEventListener('resize', resize);
+resize(); initDragon(); applyLang();
+lastT = performance.now();
+rafId = requestAnimationFrame(loop);
+
+// 給自動測試用（唯讀的狀態，不影響遊戲）
+window.__dragon = {
+  get state(){ return { state, paused, score, hearts, combo, correct, level, speed, W, H, items: items.map(i=>({text:i.text,good:i.good,x:i.x,y:i.y,r:i.r})), dragon:{x:dragon.x,y:dragon.y} }; },
+  moveTo(x,y){ dragon.tx = x; dragon.ty = y; clampTarget(); },
+  settings: S,
+};
+})();
+</script>
+</body>
+</html>
