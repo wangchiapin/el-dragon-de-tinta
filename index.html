@@ -107,7 +107,7 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
       <button class="btn" id="startBtn" data-i18n="start"></button>
       <button class="btn ghost" id="menuGear" data-i18n="settings"></button>
       <div class="sub" data-i18n="dragHint" style="margin-top:16px"></div>
-      <div class="ver">v1-4</div>
+      <div class="ver">v1-5</div>
     </div>
   </div>
 
@@ -444,7 +444,6 @@ function initDragon(){
   for(let i=0;i<SEG_N;i++) dragon.pts.push({ x:dragon.x, y:dragon.y + i*SEG_GAP });
 }
 function clampTarget(){
-  dragon.tx = clamp(dragon.tx, 34, W-34);
   dragon.ty = clamp(dragon.ty, Math.min(150, H*0.3), H*0.9);     // 最高到標籤下面，最低到畫面底部上方
 }
 
@@ -855,6 +854,15 @@ function update(dt){
     if(d > SEG_GAP){ b.x = a.x - dx/d*SEG_GAP; b.y = a.y - dy/d*SEG_GAP; }
   }
 
+  // 左右相連：頭飛出一邊，整條龍（含目標點）移到另一邊
+  if(playing){
+    let sh = 0;
+    if(dragon.x < 0) sh = W; else if(dragon.x > W) sh = -W;
+    if(sh){ dragon.x += sh; dragon.tx += sh; for(const p of P) p.x += sh; }
+  } else {
+    dragon.x = clamp(dragon.x, 0, W);
+  }
+
   if(mouthT>0) mouthT -= dt;
   if(hurtT>0) hurtT -= dt;
   if(shake>0) shake -= dt;
@@ -869,7 +877,8 @@ function update(dt){
       if(it.gone){ items.splice(i,1); continue; }
       it.y += spd*dt;
       it.x = it.bx + Math.sin(time*1.6 + it.ph)*7;
-      if(Math.hypot(it.x-hx, it.y-hy) < it.r*0.78 + 20){
+      let ddx = it.x-hx; if(ddx > W/2) ddx -= W; else if(ddx < -W/2) ddx += W;
+      if(Math.hypot(ddx, it.y-hy) < it.r*0.78 + 20){
         eat(it);
         if(state !== 'play') break;
         continue;
@@ -1139,7 +1148,14 @@ function render(){
   if(shake>0){ const m = shake*18; ctx.translate(rnd(-m,m), rnd(-m,m)); }
   drawBackground();
   drawItems();
-  drawDragon();
+  {
+    let minX = 1e9, maxX = -1e9;
+    for(const p of dragon.pts){ if(p.x<minX) minX=p.x; if(p.x>maxX) maxX=p.x; }
+    for(const off of [-W,0,W]){
+      if(maxX+off < -70 || minX+off > W+70) continue;
+      ctx.save(); ctx.translate(off,0); drawDragon(); ctx.restore();
+    }
+  }
   drawParts();
   ctx.restore();
 }
