@@ -33,6 +33,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 #toast{position:absolute;left:50%;top:24%;transform:translateX(-50%);font-size:26px;letter-spacing:4px;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s}
 #toast small{display:block;font-size:12px;letter-spacing:1px;color:var(--ink2);margin-top:4px}
 #toast.on{opacity:1}
+#egg{position:absolute;left:50%;top:36%;transform:translateX(-50%);width:90%;text-align:center;pointer-events:none;opacity:0;transition:opacity .8s;font-family:"Kaiti TC","BiauKai","DFKai-SB","KaiTi","Noto Serif TC",serif;color:var(--ink)}
+#egg.on{opacity:.92}
+#egg .z{font-size:44px;letter-spacing:8px;text-shadow:0 0 14px rgba(242,236,224,.9)}
+#egg .p{font-size:15px;letter-spacing:1px;margin-top:6px;color:var(--ink2)}
+#egg .t{font-size:13px;margin-top:3px;color:var(--ink2);font-style:italic}
 
 /* 畫面（選單、結果、設定） */
 .screen{position:absolute;inset:0;display:flex;align-items:flex-start;justify-content:center;padding:18px;overflow-y:auto}
@@ -94,6 +99,7 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
     <div id="hearts"></div>
   </div>
   <div id="toast"></div>
+  <div id="egg"></div>
 
   <!-- 選單 -->
   <div class="screen" id="menu">
@@ -107,7 +113,7 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
       <button class="btn" id="startBtn" data-i18n="start"></button>
       <button class="btn ghost" id="menuGear" data-i18n="settings"></button>
       <div class="sub" data-i18n="dragHint" style="margin-top:16px"></div>
-      <div class="ver">v1-5</div>
+      <div class="ver">v1-6</div>
     </div>
   </div>
 
@@ -515,7 +521,13 @@ function placeItem(it){
   }
   return false;
 }
+function spawnLucky(){
+  const it = { w:LUCKY[Math.floor(rnd(0,LUCKY.length))], good:false, lucky:true, x:0, y:0, blob:Array.from({length:14},()=>rnd(.9,1.1)), rot:rnd(0,6.28), ph:rnd(0,6.28), gone:false };
+  measureItem(it); it.read = ''; it.trans = '';
+  if(placeItem(it)) items.push(it);
+}
 function spawnRow(){
+  if(score >= 300 && goldCd <= 0 && Math.random() < 0.12){ goldCd = 40; spawnLucky(); }
   let n = Math.random() < 0.55 ? 1 : 2;
   if(level >= 3 && Math.random() < 0.3) n = 3;
   for(let k=0;k<n;k++){
@@ -629,6 +641,8 @@ function playAt(fn){ if(!AC || !sfxBus) return; try{ fn(AC.currentTime+0.01); }c
 function sfxGood(){ playAt(t=>{ [12,19,24].forEach((n,i)=> zheng(nf(n), t+i*0.055, 0.12-i*0.015, sfxBus, 1.1)); }); }   // 古箏往上刷
 function sfxBad(){ playAt(t=>{ wood(t, 0.16, 520, sfxBus); wood(t+0.09, 0.13, 410, sfxBus); gong(t+0.02, 0.07, 110, sfxBus, 1.1); }); }   // 木魚加低沉的鑼
 function sfxUp(){ playAt(t=>{ [7,9,12,14,16,19,21,24].forEach((n,i)=> zheng(nf(n), t+i*0.07, 0.09, sfxBus, 1.0)); }); }          // 一串往上的古箏
+function sfxEgg(){ playAt(t=>{ [19,24,28,31,36].forEach((n,i)=> zheng(nf(n), t+i*0.09, 0.09, sfxBus, 1.3)); }); }   // 高高的一串古箏
+function sfxRoar(){ playAt(t=>{ gong(t, 0.1, 73, sfxBus, 3.2); erhu(nf(-12), t+0.05, 2.4, 0.04, sfxBus); erhu(nf(-5), t+0.7, 1.8, 0.03, sfxBus); }); }   // 低沉的鑼和二胡
 function sfxEnd(){ playAt(t=>{ [19,14,9,4,0].forEach((n,i)=> zheng(nf(n), t+i*0.24, 0.1, sfxBus, 1.6)); gong(t+0.1, 0.08, 98, sfxBus, 2.6); erhu(nf(-5), t+0.2, 1.8, 0.03, sfxBus); }); }
 
 /* ---- 背景音樂：D 五聲音階（D E F# A B）的固定旋律 ----
@@ -708,12 +722,96 @@ const LEADERBOARD = {
 };
 
 /* =====================================================================
+   彩蛋：玩到特定分數時才會出現（說明文件裡不寫，讓學生自己發現）
+   ===================================================================== */
+const IDIOMS = [
+  ['龍飛鳳舞','龙飞凤舞','lóng fēi fèng wǔ','Dragón vuela, fénix danza (caligrafía vigorosa)','Dragon flies, phoenix dances'],
+  ['步步高升','步步高升','bù bù gāo shēng','Subir paso a paso','Rise step by step'],
+  ['畫龍點睛','画龙点睛','huà lóng diǎn jīng','Pintar los ojos al dragón (el toque final)','Add the finishing touch'],
+  ['魚躍龍門','鱼跃龙门','yú yuè lóng mén','El pez salta la Puerta del Dragón (triunfar)','The carp leaps the Dragon Gate'],
+  ['扶搖直上','扶摇直上','fú yáo zhí shàng','Ascender en espiral con el viento','Soar up on the whirlwind'],
+  ['一鳴驚人','一鸣惊人','yì míng jīng rén','Un solo canto que asombra a todos','One call that astonishes all'],
+  ['鵬程萬里','鹏程万里','péng chéng wàn lǐ','Un futuro de diez mil li','A bright future ahead'],
+  ['龍馬精神','龙马精神','lóng mǎ jīng shén','Vigor de dragón y caballo','Vigor and vitality'],
+  ['青雲直上','青云直上','qīng yún zhí shàng','Subir directo a las nubes azules','Rise straight to the clouds'],
+  ['一帆風順','一帆风顺','yì fān fēng shùn','Viento en popa','Smooth sailing'],
+  ['雲淡風輕','云淡风轻','yún dàn fēng qīng','Nubes ligeras, brisa suave','Light clouds, gentle breeze'],
+  ['馬到成功','马到成功','mǎ dào chéng gōng','Éxito apenas se llega','Instant success']
+];
+const LUCKY = [
+  ['福','福','fú','buena fortuna','good fortune'], ['龍','龙','lóng','dragón','dragon'],
+  ['喜','喜','xǐ','alegría','joy'], ['吉','吉','jí','buen augurio','auspicious'], ['財','财','cái','riqueza','wealth']
+];
+let eggDone = new Set(), goldT = 0, goldCd = 0, petalT = 0, petals = [], roarT = 0, cloudT = 0, idiomN = 0, eggTimer = 0, BODY = '28,27,25';
+const CLOUD_LEN = 16, ROAR_LEN = 3.4;
+function resetEggs(){
+  eggDone = new Set(); goldT = 0; goldCd = 0; petalT = 0; petals = []; roarT = 0; cloudT = 0; idiomN = 0; BODY = '28,27,25';
+  clearTimeout(eggTimer); $('egg').classList.remove('on');
+}
+function showIdiom(w){
+  const e = $('egg');
+  e.innerHTML = '<div class="z">'+wText(w)+'</div>' + (wRead(w) ? '<div class="p">'+wRead(w)+'</div>' : '') + (wTrans(w) ? '<div class="t">'+wTrans(w)+'</div>' : '');
+  e.classList.add('on');
+  clearTimeout(eggTimer); eggTimer = setTimeout(()=>e.classList.remove('on'), 4200);
+  speak(wText(w)); duckMusic(3);
+}
+function checkEggs(){
+  if(score >= 500 && !eggDone.has('gold')){ eggDone.add('gold'); goldT = 12; sfxEgg(); }
+  if(score >= 1000 && !eggDone.has('petal')){ eggDone.add('petal'); petalT = 12; sfxEgg(); }
+  if(score >= 1500 && !eggDone.has('roar')){ eggDone.add('roar'); roarT = ROAR_LEN; shake = 0.3; sfxRoar(); }
+  if(score >= 2000 && !eggDone.has('cloud')){ eggDone.add('cloud'); cloudT = CLOUD_LEN; sfxEgg(); }
+  while(score >= 250 + 500*idiomN){ showIdiom(IDIOMS[idiomN % IDIOMS.length]); idiomN++; }
+}
+function updateEggs(dt){
+  if(goldT > 0){ goldT -= dt; if(goldT > 0 && Math.random() < dt*40){ const P = dragon.pts, q = P[Math.floor(rnd(0,P.length))]; parts.push({ x:q.x+rnd(-8,8), y:q.y, vx:rnd(-30,30), vy:rnd(-20,50), r:rnd(1.5,3.4), life:0.8, max:0.8, gold:true }); } }
+  BODY = goldT > 0 ? '176,128,28' : '28,27,25';
+  goldCd -= dt;
+  if(petalT > 0){ petalT -= dt; if(Math.random() < dt*7) petals.push({ x:rnd(0,W), y:-12, vy:rnd(55,95), ph:rnd(0,6.28), sz:rnd(5,9), rot:rnd(0,6.28), vr:rnd(-2,2), pink:Math.random()<0.4 }); }
+  for(let i=petals.length-1;i>=0;i--){ const p = petals[i]; p.y += p.vy*dt; p.x += Math.sin(time*1.3+p.ph)*30*dt; p.rot += p.vr*dt; if(p.y > H+20) petals.splice(i,1); }
+  if(roarT > 0) roarT -= dt;
+  if(cloudT > 0) cloudT -= dt;
+}
+function drawEggsBack(){
+  // 雲海：淡淡的雲層慢慢飄，遠山從上面滑下去
+  if(cloudT > 0){
+    const el = CLOUD_LEN - cloudT, env = Math.min(1, el/2, cloudT/2), p = el/CLOUD_LEN;
+    ctx.save();
+    for(let k=0;k<3;k++){
+      const bx = W*(0.2+0.3*k) + Math.sin(k*2.1)*W*0.1, by = -H*0.12 + p*H*1.35 + k*H*0.06, w = W*(0.28+0.06*k), h = H*(0.2+0.04*k);
+      ctx.fillStyle = 'rgba(28,27,25,'+(0.12*env)+')';
+      ctx.beginPath(); ctx.moveTo(bx-w, by); ctx.quadraticCurveTo(bx-w*0.3, by-h*0.55, bx-w*0.08, by-h); ctx.quadraticCurveTo(bx+w*0.2, by-h*0.5, bx+w*0.4, by-h*0.7); ctx.quadraticCurveTo(bx+w*0.7, by-h*0.2, bx+w, by); ctx.closePath(); ctx.fill();
+    }
+    for(let i=0;i<6;i++){
+      const y = ((i*H/5 + scroll*0.4*(1+i*0.15)) % (H+240)) - 120, x = W/2 + Math.sin(time*0.25+i*1.9)*W*0.3;
+      ctx.save(); ctx.translate(x,y); ctx.scale(1,0.32);
+      const g = ctx.createRadialGradient(0,0,0,0,0,W*0.75); g.addColorStop(0,'rgba(250,246,238,'+(0.7*env)+')'); g.addColorStop(1,'rgba(250,246,238,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0,0,W*0.75,0,6.283); ctx.fill(); ctx.restore();
+    }
+    ctx.restore();
+  }
+  // 龍吟：畫面浮出一個大大的墨字「龍」
+  if(roarT > 0){
+    const el = ROAR_LEN - roarT, a = Math.sin(Math.min(1, el/ROAR_LEN)*Math.PI);
+    ctx.save(); ctx.globalAlpha = 0.2*a; ctx.fillStyle = '#1c1b19';
+    ctx.font = '700 '+Math.min(W*0.95,H*0.6)+'px '+FONT_WORD; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(S.script === 'simp' ? '龙' : '龍', W/2, H*0.46); ctx.restore();
+  }
+}
+function drawEggsFront(){
+  for(const p of petals){
+    ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+    ctx.fillStyle = p.pink ? 'rgba(214,128,116,0.75)' : 'rgba(184,54,43,0.72)';
+    ctx.beginPath(); ctx.ellipse(0,0,p.sz,p.sz*0.6,0,0,6.283); ctx.fill(); ctx.restore();
+  }
+}
+
+/* =====================================================================
    八、遊戲流程
    ===================================================================== */
 function startGame(){
   ensureAudio(); restartMusic(); $('pauseScr').hidden = true;
   score=0; hearts=MAX_HEARTS; combo=0; correct=0; wrongCount=0; level=0; scroll=0; spawnAcc=0; time=0;
-  speed = 130; items=[]; parts=[]; floats=[]; shake=0; mouthT=0; hurtT=0; bagGood=[]; bagBad=[]; bagSim=[]; wrongMap = new Map(); missMap = new Map();
+  resetEggs(); speed = 130; items=[]; parts=[]; floats=[]; shake=0; mouthT=0; hurtT=0; bagGood=[]; bagBad=[]; bagSim=[]; wrongMap = new Map(); missMap = new Map();
   initDragon();
   state = 'play'; paused = false;
   $('menu').hidden = true; $('res').hidden = true; $('hud').hidden = false;
@@ -726,6 +824,14 @@ function gapDist(){ return Math.max(95, 135 - level*5); }
 function eat(it){
   it.gone = true;
   const r = it.r;
+  if(it.lucky){
+    score += 100; mouthT = 0.3;
+    for(let k=0;k<22;k++){ const a = rnd(0,6.28), v = rnd(60,260); parts.push({ x:it.x, y:it.y, vx:Math.cos(a)*v, vy:Math.sin(a)*v-30, r:rnd(2,5), life:rnd(0.6,1.1), max:1.1, gold:true }); }
+    floats.push({ x:it.x, y:it.y-r, txt:'+100 '+(S.script==='simp'?'金':'金'), life:1.2, max:1.2, red:false });
+    sfxEgg(); speak(it.text); duckMusic(1.2);
+    renderHud(); checkEggs();
+    return;
+  }
   if(it.good){
     correct++; combo++;
     const mult = 1 + Math.floor(combo/5);
@@ -736,7 +842,7 @@ function eat(it){
     floats.push({ x:it.x, y:it.y-r, txt:'+'+pts, life:0.9, max:0.9, red:false });
     sfxGood(); speak(it.text); duckMusic(1.2);
     if(correct % 8 === 0){ level++; speed = levelSpeed(); showToast('up'); sfxUp(); }
-    renderHud();
+    renderHud(); checkEggs();
   } else {
     hearts--; combo = 0; wrongCount++;
     wrongMap.set(it.w, (wrongMap.get(it.w)||0) + 1);
@@ -818,6 +924,7 @@ function toMenu(){
 const held = { l:false, r:false, u:false, d:false };
 function update(dt){
   time += dt;
+  updateEggs(dt);
   const playing = state === 'play';
   const spd = playing ? speed : 55;
   scroll += spd*dt;
@@ -998,7 +1105,7 @@ function drawItems(){
     blobPath(it.x, it.y, it.r*1.22, it.blob, it.rot+0.4);
     ctx.fillStyle = 'rgba(28,27,25,0.10)'; ctx.fill();
     blobPath(it.x, it.y, it.r, it.blob, it.rot);
-    ctx.fillStyle = 'rgba(28,27,25,0.93)'; ctx.fill();
+    ctx.fillStyle = it.lucky ? 'rgba(176,128,28,0.95)' : 'rgba(28,27,25,0.93)'; ctx.fill();
     ctx.font = '700 '+it.fs+'px '+FONT_WORD;
     ctx.fillStyle = '#f2ece0';
     ctx.fillText(it.text, it.x, it.y+1);
@@ -1011,7 +1118,7 @@ function drawItems(){
 function drawParts(){
   for(const p of parts){
     const a = clamp(p.life/p.max,0,1);
-    ctx.fillStyle = p.red ? 'rgba(184,54,43,'+(0.8*a)+')' : 'rgba(28,27,25,'+(0.85*a)+')';
+    ctx.fillStyle = p.gold ? 'rgba(200,150,40,'+(0.9*a)+')' : p.red ? 'rgba(184,54,43,'+(0.8*a)+')' : 'rgba(28,27,25,'+(0.85*a)+')';
     ctx.beginPath(); ctx.arc(p.x,p.y,p.r*(0.5+0.5*a),0,6.283); ctx.fill();
   }
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -1039,7 +1146,7 @@ function drawDragon(){
     const p = P[i], q = P[i-1];
     const dx = p.x+wig[i]-(q.x+wig[i-1]), dy = p.y-q.y, d = Math.hypot(dx,dy)||1;
     const nx = -dy/d, ny = dx/d, k = i/N, h = lerp(11,3,k);
-    ctx.fillStyle = 'rgba(28,27,25,'+lerp(0.85,0.4,k)+')';
+    ctx.fillStyle = 'rgba('+BODY+','+lerp(0.85,0.4,k)+')';
     ctx.beginPath();
     ctx.moveTo(p.x+wig[i]+nx*6*(1-k)-dx/d*3, p.y+ny*6*(1-k)-dy/d*3);
     ctx.lineTo(p.x+wig[i]+nx*(6*(1-k)+h)+dx/d*4, p.y+ny*(6*(1-k)+h)+dy/d*4);
@@ -1050,7 +1157,7 @@ function drawDragon(){
   ctx.lineCap = 'round';
   for(let i=N-1;i>=1;i--){
     const k = i/N, w = lerp(19,2.2,Math.pow(k,0.85));
-    ctx.strokeStyle = 'rgba(28,27,25,'+lerp(0.96,0.5,k)+')';
+    ctx.strokeStyle = 'rgba('+BODY+','+lerp(0.96,0.5,k)+')';
     ctx.lineWidth = w;
     ctx.beginPath(); ctx.moveTo(P[i-1].x+wig[i-1],P[i-1].y); ctx.lineTo(P[i].x+wig[i],P[i].y); ctx.stroke();
   }
@@ -1063,7 +1170,7 @@ function drawDragon(){
   }
   // 尾巴的小毛
   const tl = P[N-1], tx = tl.x+wig[N-1];
-  ctx.strokeStyle = 'rgba(28,27,25,0.5)'; ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba('+BODY+',0.5)'; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(tx,tl.y); ctx.quadraticCurveTo(tx+9*Math.sin(time*3),tl.y+10,tx+4,tl.y+22); ctx.stroke();
 
   // 頭：長長的吻、分岔的鹿角、飄動的長鬚（龍頭朝上，身體在下面）
@@ -1071,7 +1178,7 @@ function drawDragon(){
   ctx.save();
   ctx.translate(dragon.x, dragon.y); ctx.rotate(tilt);
   const hurt = hurtT > 0 && Math.floor(hurtT*20)%2 === 0;
-  const ink = hurt ? 'rgba(184,54,43,0.95)' : 'rgba(28,27,25,0.97)';
+  const ink = hurt ? 'rgba(184,54,43,0.95)' : 'rgba('+BODY+',0.97)';
   const sw = Math.sin(time*3.5);
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   // 鬃毛（朱紅一點點，從後腦往下飄）
@@ -1126,7 +1233,7 @@ function drawDragon(){
   ctx.fillStyle = hurt ? '#1c1b19' : 'rgba(184,54,43,0.95)';
   ctx.beginPath(); ctx.arc(-8.5,-11,2.2,0,6.283); ctx.arc(8.5,-11,2.2,0,6.283); ctx.fill();
   // 長鬚：從嘴邊往兩側飄，再往後捲
-  ctx.strokeStyle = 'rgba(28,27,25,0.82)';
+  ctx.strokeStyle = 'rgba('+BODY+',0.82)';
   for(let sd=-1;sd<=1;sd+=2){
     ctx.lineWidth = 1.8;
     ctx.beginPath(); ctx.moveTo(sd*9,-37);
@@ -1147,6 +1254,7 @@ function render(){
   ctx.save();
   if(shake>0){ const m = shake*18; ctx.translate(rnd(-m,m), rnd(-m,m)); }
   drawBackground();
+  drawEggsBack();
   drawItems();
   {
     let minX = 1e9, maxX = -1e9;
@@ -1157,6 +1265,7 @@ function render(){
     }
   }
   drawParts();
+  drawEggsFront();
   ctx.restore();
 }
 
@@ -1343,6 +1452,8 @@ window.__dragon = {
   get musicStep(){ return mStep; },
   get review(){ return { wrong:[...wrongMap.keys()].map(w=>w[0]), miss:[...missMap.keys()].map(w=>w[0]) }; },
   get state(){ return { state, paused, score, hearts, combo, correct, level, speed, W, H, items: items.map(i=>({text:i.text,good:i.good,x:i.x,y:i.y,r:i.r})), dragon:{x:dragon.x,y:dragon.y,ang:dragon.ang,tail:{x:dragon.pts[10].x,y:dragon.pts[10].y}} }; },
+  setScore(n){ score = n; checkEggs(); },
+  eggs(){ return { done:[...eggDone], goldT, petals:petals.length, roarT, cloudT, idiomN, lucky:items.filter(i=>i.lucky).length }; },
   moveTo(x,y){ dragon.tx = x; dragon.ty = y; clampTarget(); },
   settings: S,
 };
