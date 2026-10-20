@@ -69,6 +69,15 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
 #res .cmt small{display:block;font-size:12px;color:var(--ink2);font-family:var(--serif)}
 #res .rec{color:var(--red);font-size:15px;margin-top:8px;letter-spacing:2px}
 #lbBox{margin-top:12px;font-size:13px;text-align:left}
+#lbBox .lbT{font-size:15px;text-align:center}
+#lbBox .lbT small{display:block;font-size:11px;color:var(--ink2)}
+#lbBox ol{list-style:none;margin:6px 0 0;padding:0}
+#lbBox li{display:flex;gap:8px;padding:3px 6px;border-bottom:1px solid var(--ink3)}
+#lbBox li .n{width:22px;color:var(--ink3)}
+#lbBox li .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#lbBox li .sc{font-weight:700}
+#lbBox li.me{color:var(--red)}
+#lbBox .lbM{text-align:center;color:var(--ink2);font-size:12px;margin-top:6px}
 #revBox{margin-top:14px;text-align:left}
 #revBox .rvT{font-size:15px;text-align:center}
 #revBox .rvT small{display:block;font-size:11px;color:var(--ink2)}
@@ -166,6 +175,9 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 (function(){
 'use strict';
@@ -216,6 +228,10 @@ const I18N = {
   done:['完成','完成','Listo','Done'],
   best:['最高分','最高分','Récord','Best'],
   newRec:['新紀錄！','新纪录！','¡Nuevo récord!','New record!'],
+  lbTitle:['排行榜','排行榜','Clasificación','Leaderboard'],
+  lbEmpty:['還沒有人上榜','还没有人上榜','Aún no hay nadie','No one yet'],
+  lbLoad:['載入中…','载入中…','Cargando…','Loading…'],
+  lbOff:['排行榜暫時連不上','排行榜暂时连不上','No se pudo cargar la clasificación','Leaderboard unavailable'],
   eaten:['吃對','吃对','Aciertos','Correct'],
   revTitle:['複習清單','复习清单','Para repasar','To review'],
   revHint:['點一下，聽讀音','点一下，听读音','Toca para escuchar','Tap to listen'],
@@ -716,10 +732,70 @@ function speak(text){
    七、排行榜接口（之後接 Firebase，只要把 enabled 改 true、補上兩個函式）
    ===================================================================== */
 const LEADERBOARD = {
-  enabled: false,
-  async submit(entry){ /* TODO: 寫入 Firestore。entry = {name, theme, score, correct, altitude, ts} */ },
-  async top(theme, n){ /* TODO: 回傳 [{name, score}, ...] */ return []; },
+  enabled: true,
+  /* 連到 memorma-24dab（和翻牌記憶、收納小達人共用專案）：匿名登入，每台裝置每個主題一筆，只留最高分 */
+  config: {
+    apiKey: "AIzaSyC_YSDn2OH6_GKKwCq0d8QFNl3fYXzTC60",
+    authDomain: "memorma-24dab.firebaseapp.com",
+    projectId: "memorma-24dab",
+    storageBucket: "memorma-24dab.firebasestorage.app",
+    messagingSenderId: "806709458465",
+    appId: "1:806709458465:web:f0d12acb2f911f2f165560"
+  },
+  _db: null, _uid: null, _ready: null,
+  init(){
+    if(this._ready) return this._ready;
+    this._ready = (async () => {
+      if(!window.firebase) throw new Error('no sdk');
+      firebase.initializeApp(this.config);
+      this._db = firebase.firestore();
+      this._uid = (await firebase.auth().signInAnonymously()).user.uid;
+    })();
+    return this._ready;
+  },
+  col(theme){ return this._db.collection('inkdragon_boards').doc(theme).collection('entries'); },
+  async submit(entry){
+    await this.init();
+    const ref = this.col(entry.theme).doc(this._uid);
+    const snap = await ref.get();
+    const old = snap.exists ? snap.data() : null;
+    const name = String(entry.name).slice(0,14) || '玩家';
+    if(old && old.score >= entry.score && old.name === name) return;
+    const best = (old && old.score >= entry.score) ? old : entry;
+    await ref.set({
+      name, score: Math.min(100000, Math.round(best.score)), correct: Math.min(5000, Math.round(best.correct)),
+      altitude: Math.min(1000000, Math.round(best.altitude)),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  },
+  async top(theme, n){
+    await this.init();
+    const snap = await this.col(theme).orderBy('score','desc').limit(n||10).get();
+    return snap.docs.map(d => Object.assign({ me: d.id === this._uid }, d.data()));
+  },
 };
+async function renderBoard(theme){
+  const box = $('lbBox');
+  const [tz, ts] = pair('lbTitle');
+  box.innerHTML = '<div class="lbT"><span class="zh">'+tz+'</span>'+(ts?'<small>'+ts+'</small>':'')+'</div><div class="lbM" id="lbBody"></div>';
+  const body = () => $('lbBody');
+  const msg = k => { const [z, m] = pair(k); return z + (m ? '　'+m : ''); };
+  body().textContent = msg('lbLoad');
+  try{
+    const rows = await LEADERBOARD.top(theme, 10);
+    if(!body()) return;
+    if(!rows.length){ body().textContent = msg('lbEmpty'); return; }
+    const ol = document.createElement('ol');
+    rows.forEach((r, i) => {
+      const li = document.createElement('li'); if(r.me) li.className = 'me';
+      const n = document.createElement('span'); n.className = 'n'; n.textContent = i+1;
+      const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = r.name;
+      const sc = document.createElement('span'); sc.className = 'sc'; sc.textContent = r.score;
+      li.append(n, nm, sc); ol.appendChild(li);
+    });
+    body().replaceWith(ol);
+  }catch(e){ console.warn(e); if(body()) body().textContent = msg('lbOff'); }
+}
 
 /* =====================================================================
    彩蛋：玩到特定分數時才會出現（說明文件裡不寫，讓學生自己發現）
@@ -881,7 +957,13 @@ function endGame(){
     renderReview();
   }, 600);
   const entry = { name: ($('nameInp').value||'').trim() || '玩家', theme: curTheme().id, score, correct, altitude: alt, ts: Date.now() };
-  try{ if(LEADERBOARD.enabled && score>0) LEADERBOARD.submit(entry); }catch(e){}
+  if(LEADERBOARD.enabled){
+    const th = entry.theme;
+    (async () => {
+      try{ if(score>0) await LEADERBOARD.submit(entry); }catch(e){ console.warn(e); }
+      try{ await renderBoard(th); }catch(e){}
+    })();
+  }
 }
 function renderReview(){
   const rows = [];
