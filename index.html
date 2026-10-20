@@ -107,7 +107,7 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
       <button class="btn" id="startBtn" data-i18n="start"></button>
       <button class="btn ghost" id="menuGear" data-i18n="settings"></button>
       <div class="sub" data-i18n="dragHint" style="margin-top:16px"></div>
-      <div class="ver">v1-3</div>
+      <div class="ver">v1-4</div>
     </div>
   </div>
 
@@ -436,16 +436,16 @@ let wrongMap = new Map(), missMap = new Map();   // 吃錯的字、漏掉的字�
 let rafId=0, lastT=0;
 
 /* ---- 龍 ---- */
-const dragon = { x:0, y:0, tx:0, ty:0, vx:0, vy:0, ang:0, side:1, pts:[] };
+const dragon = { x:0, y:0, tx:0, ty:0, vx:0, vy:0, ang:0, side:1, turning:false, pts:[] };
 const SEG_N = 26, SEG_GAP = 13;
 function initDragon(){
-  dragon.x = dragon.tx = W/2; dragon.y = dragon.ty = H*0.78; dragon.vx = 0; dragon.vy = 0; dragon.ang = 0; dragon.side = 1;
+  dragon.x = dragon.tx = W/2; dragon.y = dragon.ty = H*0.78; dragon.vx = 0; dragon.vy = 0; dragon.ang = 0; dragon.side = 1; dragon.turning = false;
   dragon.pts = [];
   for(let i=0;i<SEG_N;i++) dragon.pts.push({ x:dragon.x, y:dragon.y + i*SEG_GAP });
 }
 function clampTarget(){
   dragon.tx = clamp(dragon.tx, 34, W-34);
-  dragon.ty = clamp(dragon.ty, H*0.5, H*0.88);
+  dragon.ty = clamp(dragon.ty, Math.min(150, H*0.3), H*0.9);     // 最高到標籤下面，最低到畫面底部上方
 }
 
 /* =====================================================================
@@ -834,22 +834,23 @@ function update(dt){
   dragon.y += (dragon.ty-dragon.y)*Math.min(1,dt*12);
   dragon.vx = (dragon.x-px)/Math.max(dt,0.001);
   dragon.vy = (dragon.y-py)/Math.max(dt,0.001);
-  // 頭轉向：朝著移動的方向。往下退時最多轉到側面（不然會壓到自己的身體）；慢下來就慢慢回正
+  // 頭轉向：朝著移動的方向，可以一路轉到朝下（往回飛）；停下來就慢慢轉回朝上
   const mv = Math.hypot(dragon.vx, dragon.vy);
-  if(Math.abs(dragon.vx) > 8) dragon.side = dragon.vx > 0 ? 1 : -1;
-  let want = Math.atan2(dragon.vx, -dragon.vy);                 // 0＝朝上，正＝往右
-  const LIM = 1.35;                                             // 約 77 度
-  if(Math.abs(want) > LIM) want = dragon.side * LIM;
-  want *= clamp((mv-25)/140, 0, 1);
-  dragon.ang += (want-dragon.ang)*Math.min(1,dt*9);
+  if(mv > 60) dragon.turning = true; else if(mv < 22) dragon.turning = false;   // 前後門檻不同，避免在邊界一直抖
+  const want = dragon.turning ? Math.atan2(dragon.vx, -dragon.vy) : 0;          // 0＝朝上，正＝往右，±π＝朝下
+  let diff = want - dragon.ang;
+  diff = Math.atan2(Math.sin(diff), Math.cos(diff));                            // 走最短的角度
+  dragon.ang += diff*Math.min(1,dt*9);
+  dragon.ang = Math.atan2(Math.sin(dragon.ang), Math.cos(dragon.ang));
+  const relax = clamp(1 - mv/140, 0, 1);      // 越靜止越接近 1：身體才會垂回頭的下方
 
   // 龍身：後一節跟著前一節
   const P = dragon.pts;
   P[0].x = dragon.x; P[0].y = dragon.y;
   for(let i=1;i<P.length;i++){
     const a = P[i-1], b = P[i];
-    b.y += ((a.y+SEG_GAP)-b.y)*Math.min(1,dt*4);
-    b.x += (a.x-b.x)*Math.min(1,dt*9);
+    b.y += ((a.y+SEG_GAP)-b.y)*Math.min(1,dt*4*relax);       // 移動時身體跟著頭走過的路線；靜止時才垂下來
+    b.x += (a.x-b.x)*Math.min(1,dt*(1.5+7.5*relax));
     const dx = a.x-b.x, dy = a.y-b.y, d = Math.hypot(dx,dy) || 1;
     if(d > SEG_GAP){ b.x = a.x - dx/d*SEG_GAP; b.y = a.y - dy/d*SEG_GAP; }
   }
@@ -1325,7 +1326,7 @@ window.__dragon = {
   },
   get musicStep(){ return mStep; },
   get review(){ return { wrong:[...wrongMap.keys()].map(w=>w[0]), miss:[...missMap.keys()].map(w=>w[0]) }; },
-  get state(){ return { state, paused, score, hearts, combo, correct, level, speed, W, H, items: items.map(i=>({text:i.text,good:i.good,x:i.x,y:i.y,r:i.r})), dragon:{x:dragon.x,y:dragon.y,ang:dragon.ang} }; },
+  get state(){ return { state, paused, score, hearts, combo, correct, level, speed, W, H, items: items.map(i=>({text:i.text,good:i.good,x:i.x,y:i.y,r:i.r})), dragon:{x:dragon.x,y:dragon.y,ang:dragon.ang,tail:{x:dragon.pts[10].x,y:dragon.pts[10].y}} }; },
   moveTo(x,y){ dragon.tx = x; dragon.ty = y; clampTarget(); },
   settings: S,
 };
