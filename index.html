@@ -107,7 +107,7 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
       <button class="btn" id="startBtn" data-i18n="start"></button>
       <button class="btn ghost" id="menuGear" data-i18n="settings"></button>
       <div class="sub" data-i18n="dragHint" style="margin-top:16px"></div>
-      <div class="ver">v1-2</div>
+      <div class="ver">v1-3</div>
     </div>
   </div>
 
@@ -531,61 +531,152 @@ function spawnRow(){
 /* =====================================================================
    六、聲音（輕輕的撥弦聲）與語音
    ===================================================================== */
-let AC = null;
+let AC = null, musicBus = null, sfxBus = null, reverb = null, noiseBuf = null;
+let musicOn = true;
+try{ musicOn = localStorage.getItem('dragonInk.music') !== '0'; }catch(e){}
+
+// 建立音訊路線：音樂和音效各一條，都送一點到「殘響」，聽起來像在山谷裡
+function buildAudio(){
+  const rate = AC.sampleRate, len = Math.floor(rate*1.8);
+  const ir = AC.createBuffer(2, len, rate);
+  for(let ch=0; ch<2; ch++){
+    const d = ir.getChannelData(ch);
+    for(let i=0;i<len;i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/len, 2.6);
+  }
+  reverb = AC.createConvolver(); reverb.buffer = ir;
+  const wet = AC.createGain(); wet.gain.value = 0.3; reverb.connect(wet); wet.connect(AC.destination);
+  musicBus = AC.createGain(); musicBus.gain.value = 1; musicBus.connect(AC.destination); musicBus.connect(reverb);
+  sfxBus = AC.createGain(); sfxBus.gain.value = 1; sfxBus.connect(AC.destination);
+  const sfxSend = AC.createGain(); sfxSend.gain.value = 0.55; sfxBus.connect(sfxSend); sfxSend.connect(reverb);
+  noiseBuf = AC.createBuffer(1, Math.floor(rate*0.25), rate);
+  const nd = noiseBuf.getChannelData(0); for(let i=0;i<nd.length;i++) nd[i] = Math.random()*2-1;
+}
 function ensureAudio(){
   try{
-    if(!AC){ const C = window.AudioContext || window.webkitAudioContext; if(C) AC = new C(); }
+    if(!AC){ const C = window.AudioContext || window.webkitAudioContext; if(C){ AC = new C(); buildAudio(); } }
     if(AC && AC.state === 'suspended') AC.resume();
     startMusicLoop();
   }catch(e){}
 }
-function tone(freq, dur, type, vol){
-  if(!AC) return;
-  try{
-    const o = AC.createOscillator(), g = AC.createGain();
-    o.type = type||'triangle'; o.frequency.value = freq;
-    g.gain.setValueAtTime(vol||0.12, AC.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime+dur);
-    o.connect(g); g.connect(AC.destination);
-    o.start(); o.stop(AC.currentTime+dur+0.02);
-  }catch(e){}
+
+/* ---- 樂器（全部用振盪器合成，不用音檔）---- */
+// 古箏：撥弦的「嗒」＋ 很快變暗的音
+function zheng(freq, t, vol, dest, dur){
+  dur = dur || 1.5;
+  const o = AC.createOscillator(), o2 = AC.createOscillator(), h2 = AC.createGain();
+  const f = AC.createBiquadFilter(), g = AC.createGain();
+  o.type = 'triangle'; o.frequency.setValueAtTime(freq*1.012, t); o.frequency.exponentialRampToValueAtTime(freq, t+0.05);
+  o2.type = 'sine'; o2.frequency.setValueAtTime(freq*2.003, t); h2.gain.value = 0.32;
+  f.type = 'lowpass'; f.Q.value = 0.8;
+  f.frequency.setValueAtTime(Math.min(9000, freq*9), t);
+  f.frequency.exponentialRampToValueAtTime(Math.max(600, freq*1.7), t+dur*0.65);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t+0.006); g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+  o.connect(f); o2.connect(h2); h2.connect(f); f.connect(g); g.connect(dest);
+  o.start(t); o2.start(t); o.stop(t+dur+0.05); o2.stop(t+dur+0.05);
+  // 指甲撥弦的小聲「嗒」
+  const ns = AC.createBufferSource(), bp = AC.createBiquadFilter(), ng = AC.createGain();
+  ns.buffer = noiseBuf; bp.type = 'bandpass'; bp.frequency.value = Math.min(5000, freq*4); bp.Q.value = 1.1;
+  ng.gain.setValueAtTime(vol*0.7, t); ng.gain.exponentialRampToValueAtTime(0.0001, t+0.035);
+  ns.connect(bp); bp.connect(ng); ng.connect(dest); ns.start(t); ns.stop(t+0.06);
 }
-// 背景音樂：D 五聲音階（D E F# A B），像古箏輕輕撥弦；只在遊戲進行中、沒暫停時出聲
-let musicOn = true;
-try{ musicOn = localStorage.getItem('dragonInk.music') !== '0'; }catch(e){}
-let musicGain = null, musicTimer = 0, musicStep = 3, musicBeat = 0;
-const SCALE = [293.66, 329.63, 369.99, 440.00, 493.88, 587.33, 659.25, 739.99];
-function pluck(freq, vol){
-  if(!AC || !musicGain) return;
-  try{
-    const t = AC.currentTime;
-    const o = AC.createOscillator(), o2 = AC.createOscillator(), g = AC.createGain();
-    o.type = 'triangle'; o.frequency.value = freq;
-    o2.type = 'sine'; o2.frequency.value = freq*2;
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(vol, t+0.012);
-    g.gain.exponentialRampToValueAtTime(0.0001, t+1.6);
-    o.connect(g); o2.connect(g); g.connect(musicGain);
-    o.start(t); o2.start(t); o.stop(t+1.7); o2.stop(t+1.7);
-  }catch(e){}
+// 二胡：拉出來的長音，帶一點滑音和顫音
+function erhu(freq, t, dur, vol, dest){
+  const o = AC.createOscillator(), lp = AC.createBiquadFilter(), g = AC.createGain();
+  const lfo = AC.createOscillator(), lg = AC.createGain();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(freq*0.972, t); o.frequency.exponentialRampToValueAtTime(freq, t+0.1);
+  lp.type = 'lowpass'; lp.Q.value = 1.4; lp.frequency.setValueAtTime(900, t); lp.frequency.linearRampToValueAtTime(2200, t+0.4);
+  lfo.type = 'sine'; lfo.frequency.value = 5.4;
+  lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(16, t+0.45);      // 顫音慢慢出來（單位：音分）
+  lfo.connect(lg); lg.connect(o.detune);
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t+0.2);
+  g.gain.setValueAtTime(vol, t+Math.max(0.25, dur-0.35)); g.gain.linearRampToValueAtTime(0.0001, t+dur);
+  o.connect(lp); lp.connect(g); g.connect(dest);
+  o.start(t); lfo.start(t); o.stop(t+dur+0.05); lfo.stop(t+dur+0.05);
+}
+// 木魚：短短的「叩」
+function wood(t, vol, freq, dest){
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(freq*1.15, t); o.frequency.exponentialRampToValueAtTime(freq, t+0.02);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t+0.09);
+  o.connect(g); g.connect(dest); o.start(t); o.stop(t+0.12);
+  const ns = AC.createBufferSource(), bp = AC.createBiquadFilter(), ng = AC.createGain();
+  ns.buffer = noiseBuf; bp.type = 'bandpass'; bp.frequency.value = freq*2; bp.Q.value = 2;
+  ng.gain.setValueAtTime(vol*0.5, t); ng.gain.exponentialRampToValueAtTime(0.0001, t+0.02);
+  ns.connect(bp); bp.connect(ng); ng.connect(dest); ns.start(t); ns.stop(t+0.04);
+}
+// 鼓：低低的「咚」
+function drum(t, vol, dest){
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(52, t+0.16);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t+0.32);
+  o.connect(g); g.connect(dest); o.start(t); o.stop(t+0.36);
+}
+// 鑼：幾個不整齊的泛音一起慢慢散掉
+function gong(t, vol, base, dest, dur){
+  dur = dur || 2.2;
+  [[1,1],[1.52,0.7],[2.13,0.5],[2.76,0.35],[3.41,0.22]].forEach(([m,a],i)=>{
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = 'sine'; o.frequency.value = base*m;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol*a, t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+dur*(1-i*0.1));
+    o.connect(g); g.connect(dest); o.start(t); o.stop(t+dur+0.05);
+  });
+}
+
+/* ---- 音效 ---- */
+const nf = n => 293.66*Math.pow(2, n/12);               // 以 D4 為 0 的半音數 → 頻率
+function playAt(fn){ if(!AC || !sfxBus) return; try{ fn(AC.currentTime+0.01); }catch(e){} }
+function sfxGood(){ playAt(t=>{ [12,19,24].forEach((n,i)=> zheng(nf(n), t+i*0.055, 0.12-i*0.015, sfxBus, 1.1)); }); }   // 古箏往上刷
+function sfxBad(){ playAt(t=>{ wood(t, 0.16, 520, sfxBus); wood(t+0.09, 0.13, 410, sfxBus); gong(t+0.02, 0.07, 110, sfxBus, 1.1); }); }   // 木魚加低沉的鑼
+function sfxUp(){ playAt(t=>{ [7,9,12,14,16,19,21,24].forEach((n,i)=> zheng(nf(n), t+i*0.07, 0.09, sfxBus, 1.0)); }); }          // 一串往上的古箏
+function sfxEnd(){ playAt(t=>{ [19,14,9,4,0].forEach((n,i)=> zheng(nf(n), t+i*0.24, 0.1, sfxBus, 1.6)); gong(t+0.1, 0.08, 98, sfxBus, 2.6); erhu(nf(-5), t+0.2, 1.8, 0.03, sfxBus); }); }
+
+/* ---- 背景音樂：D 五聲音階（D E F# A B）的固定旋律 ----
+   4 個樂句（每句 4 小節、32 個八分音符），排成 8 句一輪循環。
+   數字是「離 D4 幾個半音」，null 是休息。 */
+const PHR = {
+  A:[ 9,null,7,null, 4,null,7,9,   12,null,9,7, 9,null,null,null,   7,null,9,null, 12,null,14,12,   9,null,7,4, 2,null,0,null ],
+  B:[ 14,null,12,9, 12,null,14,16,   19,null,16,14, 12,null,null,9,   14,null,16,19, 21,null,19,16,   14,12,9,7, 9,null,null,null ],
+  C:[ 12,null,9,null, 7,null,9,12,   9,null,7,4, 2,null,4,7,   9,null,7,null, 4,null,2,0,   2,null,4,null, 0,null,null,null ],
+  D:[ 7,7,9,null, 12,null,9,7,   4,null,7,9, 12,null,null,null,   14,14,12,null, 9,null,12,14,   16,null,14,12, 9,null,null,null ],
+};
+// 二胡長音：[第幾步開始, 音, 拉幾步]
+const ERHU = {
+  A:[[0,4,14],[16,2,14]], B:[[0,9,14],[16,7,14]], C:[[0,4,14],[16,0,14]], D:[[0,7,14],[16,9,14]],
+};
+const SONG = ['A','A','B','C','A','B','D','C'];
+const BASS = [-12,-17,-12,-10];
+let mStep = 0, mNext = 0, mTimer = 0;
+function stepDur(){ return 60/(84 + Math.min(level,10)*4)/2; }     // 八分音符的長度；越飛越高，速度越快
+function scheduleStep(i, t){
+  const ph = SONG[Math.floor(i/32) % SONG.length], k = i % 32, bar = Math.floor(k/8), st = k % 8;
+  const mel = PHR[ph][k];
+  if(mel !== null) zheng(nf(mel), t, st === 0 ? 0.085 : 0.068, musicBus, 1.5);
+  ERHU[ph].forEach(([s,n,len])=>{ if(s === k) erhu(nf(n), t, len*stepDur(), 0.024, musicBus); });
+  if(st === 0){ zheng(nf(BASS[bar]), t, 0.07, musicBus, 2.4); drum(t, 0.09, musicBus); }
+  if(st === 4) drum(t, 0.05, musicBus);
+  if(st === 2 || st === 6) wood(t, 0.035, st === 2 ? 1000 : 760, musicBus);
+  if(level >= 3 && st % 2 === 1) wood(t, 0.015, 1350, musicBus);        // 高等級多一點節奏
+  if(i % (32*SONG.length) === 0) gong(t, 0.05, 150, musicBus, 3);       // 每一輪開頭敲一下鑼
 }
 function musicTick(){
-  musicTimer = 0;
-  const delay = 420 + Math.random()*380;
-  if(AC && musicOn && state === 'play' && !paused){
-    musicBeat++;
-    if(musicBeat % 8 === 1) pluck(146.83, 0.05);               // 低音
-    if(Math.random() > 0.18){                                    // 偶爾留白
-      musicStep = clamp(musicStep + Math.floor(rnd(-2,3)), 0, SCALE.length-1);
-      pluck(SCALE[musicStep], 0.045);
-    }
-  }
-  musicTimer = setTimeout(musicTick, delay);
+  if(!AC || !musicBus) return;
+  // 只在遊戲進行中、沒暫停、音樂開著的時候出聲
+  if(!(musicOn && state === 'play' && !paused)){ mNext = 0; return; }
+  const now = AC.currentTime;
+  if(mNext < now + 0.05) mNext = now + 0.08;                           // 暫停回來、或被瀏覽器拖慢之後，從現在接著放
+  while(mNext < now + 0.4){ scheduleStep(mStep, mNext); mNext += stepDur(); mStep++; }
 }
-function startMusicLoop(){
-  if(!AC) return;
-  if(!musicGain){ musicGain = AC.createGain(); musicGain.gain.value = 1; musicGain.connect(AC.destination); }
-  if(!musicTimer) musicTimer = setTimeout(musicTick, 300);
+function startMusicLoop(){ if(!mTimer) mTimer = setInterval(musicTick, 100); }
+function restartMusic(){ mStep = 0; mNext = 0; }
+function duckMusic(sec){                                                // 念字的時候，音樂輕輕退後一點
+  if(!AC || !musicBus) return;
+  try{
+    const t = AC.currentTime, g = musicBus.gain;
+    g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0.4, t+0.05);
+    g.setValueAtTime(0.4, t+sec); g.linearRampToValueAtTime(1, t+sec+0.5);
+  }catch(e){}
 }
 function setMusic(on){
   musicOn = on;
@@ -593,10 +684,6 @@ function setMusic(on){
   $('musicBtn').classList.toggle('off', !on);
   markGroup('gMusic', on ? 'on' : 'off');
 }
-function sfxGood(){ tone(659,0.35,'triangle',0.13); setTimeout(()=>tone(988,0.4,'triangle',0.1),70); }
-function sfxBad(){ tone(150,0.3,'sawtooth',0.1); }
-function sfxUp(){ tone(523,0.25,'sine',0.1); setTimeout(()=>tone(784,0.25,'sine',0.1),110); setTimeout(()=>tone(1046,0.4,'sine',0.1),220); }
-function sfxEnd(){ tone(392,0.5,'triangle',0.12); setTimeout(()=>tone(294,0.6,'triangle',0.12),220); }
 let voices = [];
 function loadVoices(){ try{ voices = speechSynthesis.getVoices() || []; }catch(e){ voices = []; } }
 if('speechSynthesis' in window){ loadVoices(); try{ speechSynthesis.onvoiceschanged = loadVoices; }catch(e){} }
@@ -625,7 +712,7 @@ const LEADERBOARD = {
    八、遊戲流程
    ===================================================================== */
 function startGame(){
-  ensureAudio(); $('pauseScr').hidden = true;
+  ensureAudio(); restartMusic(); $('pauseScr').hidden = true;
   score=0; hearts=MAX_HEARTS; combo=0; correct=0; wrongCount=0; level=0; scroll=0; spawnAcc=0; time=0;
   speed = 130; items=[]; parts=[]; floats=[]; shake=0; mouthT=0; hurtT=0; bagGood=[]; bagBad=[]; bagSim=[]; wrongMap = new Map(); missMap = new Map();
   initDragon();
@@ -648,7 +735,7 @@ function eat(it){
     mouthT = 0.25;
     inkSplash(it.x, it.y, 14, 1, false);
     floats.push({ x:it.x, y:it.y-r, txt:'+'+pts, life:0.9, max:0.9, red:false });
-    sfxGood(); speak(it.text);
+    sfxGood(); speak(it.text); duckMusic(1.2);
     if(correct % 8 === 0){ level++; speed = levelSpeed(); showToast('up'); sfxUp(); }
     renderHud();
   } else {
@@ -656,7 +743,7 @@ function eat(it){
     wrongMap.set(it.w, (wrongMap.get(it.w)||0) + 1);
     shake = 0.35; hurtT = 0.5;
     inkSplash(it.x, it.y, 26, 1.6, true);
-    sfxBad();
+    sfxBad(); speak(it.text); duckMusic(1.2);
     try{ navigator.vibrate && navigator.vibrate(60); }catch(e){}
     renderHud();
     if(hearts <= 0) endGame();
@@ -1210,6 +1297,33 @@ rafId = requestAnimationFrame(loop);
 
 // 給自動測試用（唯讀的狀態，不影響遊戲）
 window.__dragon = {
+  // 自動測試用：用離線音訊把音樂或音效「錄」下來，回傳音量統計（不會出聲）
+  async renderTest(kind, secs, wav){
+    const saved = { AC, musicBus, sfxBus, reverb, noiseBuf };
+    try{
+      const oc = new OfflineAudioContext(2, Math.floor(44100*secs), 44100);
+      AC = oc; buildAudio();
+      if(kind === 'music'){ let t = 0.05, i = 0; while(t < secs-1.5){ scheduleStep(i, t); t += stepDur(); i++; } }
+      else if(kind === 'good') sfxGood(); else if(kind === 'bad') sfxBad(); else if(kind === 'up') sfxUp(); else if(kind === 'end') sfxEnd();
+      const buf = await oc.startRendering(), d = buf.getChannelData(0);
+      let peak = 0, nan = 0, clip = 0, sum = 0; const rms = []; let acc = 0, cnt = 0;
+      for(let i=0;i<d.length;i++){
+        const v = d[i]; if(v !== v){ nan++; continue; }
+        const a = Math.abs(v); if(a > peak) peak = a; if(a >= 0.99) clip++; sum += v; acc += v*v; cnt++;
+        if(cnt === 44100){ rms.push(+Math.sqrt(acc/cnt).toFixed(4)); acc = 0; cnt = 0; }
+      }
+      const out = { peak:+peak.toFixed(3), nan, clip, dc:+(sum/d.length).toFixed(5), rms };
+      if(wav){   // 要試聽用：把聲音回傳成 16 位元 PCM（base64）
+        const L = buf.getChannelData(0), R = buf.getChannelData(1), pcm = new Int16Array(L.length*2);
+        for(let i=0;i<L.length;i++){ pcm[2*i] = Math.max(-1,Math.min(1,L[i]))*32767; pcm[2*i+1] = Math.max(-1,Math.min(1,R[i]))*32767; }
+        let bin = ''; const u8 = new Uint8Array(pcm.buffer);
+        for(let i=0;i<u8.length;i+=0x8000) bin += String.fromCharCode.apply(null, u8.subarray(i, i+0x8000));
+        out.pcm = btoa(bin);
+      }
+      return out;
+    } finally { AC = saved.AC; musicBus = saved.musicBus; sfxBus = saved.sfxBus; reverb = saved.reverb; noiseBuf = saved.noiseBuf; }
+  },
+  get musicStep(){ return mStep; },
   get review(){ return { wrong:[...wrongMap.keys()].map(w=>w[0]), miss:[...missMap.keys()].map(w=>w[0]) }; },
   get state(){ return { state, paused, score, hearts, combo, correct, level, speed, W, H, items: items.map(i=>({text:i.text,good:i.good,x:i.x,y:i.y,r:i.r})), dragon:{x:dragon.x,y:dragon.y,ang:dragon.ang} }; },
   moveTo(x,y){ dragon.tx = x; dragon.ty = y; clampTarget(); },
