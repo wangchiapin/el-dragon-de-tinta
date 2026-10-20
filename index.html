@@ -72,6 +72,15 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
 #res .cmt small{display:block;font-size:12px;color:var(--ink2);font-family:var(--serif)}
 #res .rec{color:var(--red);font-size:15px;margin-top:8px;letter-spacing:2px}
 #lbBox{margin-top:12px;font-size:13px;text-align:left}
+#lbBox .lbT{font-size:15px;text-align:center}
+#lbBox .lbT small{display:block;font-size:11px;color:var(--ink2)}
+#lbBox ol{list-style:none;margin:6px 0 0;padding:0}
+#lbBox li{display:flex;gap:8px;padding:3px 6px;border-bottom:1px solid var(--ink3)}
+#lbBox li .n{width:22px;color:var(--ink3)}
+#lbBox li .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#lbBox li .sc{font-weight:700}
+#lbBox li.me{color:var(--red)}
+#lbBox .lbM{text-align:center;color:var(--ink2);font-size:12px;margin-top:6px}
 #revBox{margin-top:14px;text-align:left}
 #revBox .rvT{font-size:15px;text-align:center}
 #revBox .rvT small{display:block;font-size:11px;color:var(--ink2)}
@@ -167,7 +176,98 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
+
+
+/* ===== 找不到中文聲音的提示（每天一分鐘遊戲統一做法）===== */
+(function(){
+  var shown=false;
+  function cfg(){ var s={}; try{ s=JSON.parse(localStorage.getItem('hanziGames.settings')||'{}')||{}; }catch(e){} return s; }
+  function isMandarin(v){ var l=String((v&&v.lang)||'').toLowerCase().replace(/_/g,'-'); if(l.indexOf('yue')===0||l.indexOf('zh-hk')===0) return false; return l==='zh'||l.indexOf('zh-')===0||l.indexOf('cmn')===0; }
+  var T={
+    none:{ zh:['這個裝置找不到中文（台灣）語音，聽不到念的內容。請到手機設定安裝「中文（台灣）」語音，或換一個裝置。','这个装置找不到中文（台湾）语音，听不到念的内容。请到手机设置安装「中文（台湾）」语音，或换一个装置。'],
+           es:'No se encontró una voz de chino (Taiwán) en este dispositivo, así que no se oirá el audio. Instala la voz «chino (Taiwán)» en los ajustes del móvil o usa otro dispositivo.',
+           en:'No Chinese (Taiwan) voice was found on this device, so you won’t hear the audio. Install the “Chinese (Taiwan)” voice in your phone settings, or use another device.' },
+    nosynth:{ zh:['這個瀏覽器不支援語音，聽不到念的內容。請換一個瀏覽器（例如 Chrome、Safari）。','这个浏览器不支持语音，听不到念的内容。请换一个浏览器（例如 Chrome、Safari）。'],
+           es:'Este navegador no admite voz, así que no se oirá el audio. Usa otro navegador (por ejemplo Chrome o Safari).',
+           en:'This browser does not support speech, so you won’t hear the audio. Try another browser (for example Chrome or Safari).' }
+  };
+  function show(kind){
+    if(shown||document.getElementById('hgVoiceHint')) return; shown=true;
+    var s=cfg(), lang=s.lang||'es', simp=s.script==='simp', t=T[kind];
+    var st=document.createElement('style');
+    st.textContent='#hgVoiceHint{position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:2147482999;width:min(94vw,520px);box-sizing:border-box;display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:12px;background:#fff6dc;border:1px solid #d8b24a;color:#5b4410;font:13px/1.4 system-ui,-apple-system,"Noto Sans TC","PingFang TC",sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.25)}#hgVoiceHint .m{flex:1}#hgVoiceHint .m small{display:block;font-size:11px;opacity:.85;margin-top:2px}#hgVoiceHint button{border:0;background:transparent;color:inherit;font-size:16px;line-height:1;padding:0 2px;cursor:pointer}';
+    document.head.appendChild(st);
+    var d=document.createElement('div'); d.id='hgVoiceHint'; d.setAttribute('role','status');
+    var m=document.createElement('div'); m.className='m';
+    var zh=document.createElement('div'); zh.textContent = simp ? t.zh[1] : t.zh[0]; m.appendChild(zh);
+    if(lang!=='zh'){ var sm=document.createElement('small'); sm.textContent = lang==='en' ? t.en : t.es; m.appendChild(sm); }
+    var x=document.createElement('button'); x.type='button'; x.textContent='✕'; x.setAttribute('aria-label','Close');
+    x.addEventListener('click',function(){ d.remove(); });
+    d.appendChild(m); d.appendChild(x); document.body.appendChild(d);
+  }
+  function check(){
+    try{
+      if(!window.speechSynthesis){ show('nosynth'); return; }
+      var vs=window.speechSynthesis.getVoices()||[];
+      if(vs.length && !vs.some(isMandarin)) show('none');   // 清單是空的時（有些手機一開始就是空的）先不判斷
+    }catch(e){}
+  }
+  function start(){
+    check();
+    try{ window.speechSynthesis.addEventListener('voiceschanged', check); }catch(e){}
+    setTimeout(check,1500); setTimeout(check,4000);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
+/* ===== /找不到中文聲音的提示 ===== */
+
+/* ===== 一鍵靜音（只關音樂和音效，不影響念字的語音）— 每天一分鐘遊戲統一做法 ===== */
+(function(){
+  var KEY='hg.mute.dragon', MOUNT='', muted=false, masters=[];
+  try{ muted = localStorage.getItem(KEY)==='1'; }catch(e){}
+  /* 讓這個遊戲建立的所有 Web Audio 聲音，都先經過一個總音量；靜音＝總音量 0 */
+  try{
+    var BP = window.BaseAudioContext ? window.BaseAudioContext.prototype : (window.AudioContext||window.webkitAudioContext).prototype;
+    var desc = Object.getOwnPropertyDescriptor(BP,'destination');
+    if(desc && desc.get){
+      Object.defineProperty(BP,'destination',{configurable:true,get:function(){
+        var real = desc.get.call(this);
+        if(!this.__hgMaster){
+          try{ var g=this.createGain(); g.gain.value = muted?0:1; g.connect(real); this.__hgMaster=g; masters.push(g); }
+          catch(e){ return real; }
+        }
+        return this.__hgMaster;
+      }});
+    }
+  }catch(e){}
+  /* 備用的 <audio> 播放（例如 iPhone 的 Chrome）也一起靜音 */
+  try{
+    var op = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function(){ this.muted = muted; return op.apply(this, arguments); };
+  }catch(e){}
+  function apply(){ masters.forEach(function(g){ try{ g.gain.setValueAtTime(muted?0:1, g.context.currentTime); }catch(e){ g.gain.value = muted?0:1; } }); }
+  function build(){
+    if(document.getElementById('hgMute')) return;
+    var st=document.createElement('style');
+    st.textContent='#hgMute{position:fixed;left:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:2147483000;width:40px;height:40px;border-radius:50%;border:1px solid rgba(0,0,0,.28);background:rgba(255,255,255,.88);color:#222;font-size:19px;line-height:1;padding:0;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.25);touch-action:manipulation;-webkit-tap-highlight-color:transparent}#hgMute:active{transform:scale(.94)}#hgMute.st{position:static;flex:0 0 40px;margin:0 0 0 8px}';
+    document.head.appendChild(st);
+    var b=document.createElement('button'); b.type='button'; b.id='hgMute';
+    function paint(){ b.textContent = muted?'🔇':'🔊'; b.setAttribute('aria-pressed', muted?'true':'false');
+      b.title = b.ariaLabel = muted ? '開啟音樂和音效 · Activar música y efectos' : '靜音（音樂和音效）· Silenciar música y efectos'; apply(); }
+    b.addEventListener('click',function(e){ e.stopPropagation(); muted=!muted; try{ localStorage.setItem(KEY, muted?'1':'0'); }catch(err){} paint(); });
+    b.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
+    paint();
+    var anchor = MOUNT && document.querySelector(MOUNT);
+    if(anchor && anchor.parentNode){ b.className='st'; anchor.parentNode.insertBefore(b, anchor.nextSibling); } else document.body.appendChild(b);
+  }
+  if(document.body) build(); else document.addEventListener('DOMContentLoaded', build);
+})();
+/* ===== /一鍵靜音 ===== */
+
 (function(){
 'use strict';
 
@@ -217,6 +317,10 @@ const I18N = {
   done:['完成','完成','Listo','Done'],
   best:['最高分','最高分','Récord','Best'],
   newRec:['新紀錄！','新纪录！','¡Nuevo récord!','New record!'],
+  lbTitle:['排行榜','排行榜','Clasificación','Leaderboard'],
+  lbEmpty:['還沒有人上榜','还没有人上榜','Aún no hay nadie','No one yet'],
+  lbLoad:['載入中…','载入中…','Cargando…','Loading…'],
+  lbOff:['排行榜暫時連不上','排行榜暂时连不上','No se pudo cargar la clasificación','Leaderboard unavailable'],
   eaten:['吃對','吃对','Aciertos','Correct'],
   revTitle:['複習清單','复习清单','Para repasar','To review'],
   revHint:['點一下，聽讀音','点一下，听读音','Toca para escuchar','Tap to listen'],
@@ -308,7 +412,7 @@ const THEMES = [
     ['腰','腰','yāo','cintura','waist'],['嘴唇','嘴唇','zuǐchún','labios','lips'] ]},
   { id:'clothes', name:['衣服','衣服','Ropa','Clothes'], words:[
     ['襯衫','衬衫','chènshān','camisa','shirt'],['褲子','裤子','kùzi','pantalones','pants'],['裙子','裙子','qúnzi','falda','skirt'],
-    ['外套','外套','wàitào','chaqueta','jacket'],['帽子','帽子','màozi','gorra','hat'],['鞋子','鞋子','xiézi','zapatos','shoes'],
+    ['外套','外套','wàitào','chaqueta','jacket'],['帽子','帽子','màozi','gorro','hat'],['鞋子','鞋子','xiézi','zapatos','shoes'],
     ['襪子','袜子','wàzi','calcetines','socks'],['眼鏡','眼镜','yǎnjìng','lentes','glasses'],['手錶','手表','shǒubiǎo','reloj','watch'],
     ['皮包','皮包','píbāo','bolso','handbag'],['圍巾','围巾','wéijīn','bufanda','scarf'],['手套','手套','shǒutào','guantes','gloves'],
     ['領帶','领带','lǐngdài','corbata','tie'],['洋裝','洋装','yángzhuāng','vestido','dress'],['牛仔褲','牛仔裤','niúzǎikù','jeans','jeans'],
@@ -333,8 +437,8 @@ const THEMES = [
   { id:'home', name:['家裡','家里','En casa','At home'], words:[
     ['桌子','桌子','zhuōzi','mesa','table'],['椅子','椅子','yǐzi','silla','chair'],['沙發','沙发','shāfā','sofá','sofa'],
     ['床','床','chuáng','cama','bed'],['冰箱','冰箱','bīngxiāng','refrigerador','fridge'],['電視','电视','diànshì','televisión','TV'],
-    ['冷氣','冷气','lěngqì','aire acondicionado','air conditioner'],['電風扇','电风扇','diànfēngshàn','ventilador','fan'],['窗戶','窗户','chuānghu','ventana','window'],
-    ['門','门','mén','puerta','door'],['燈','灯','dēng','lámpara','lamp'],['書櫃','书柜','shūguì','librero','bookcase'],
+    ['冷氣','冷气','lěngqì','aire acondicionado','air conditioner'],['電風扇','电风扇','diànfēngshàn','ventilador','fan'],['窗戶','窗户','chuānghù','ventana','window'],
+    ['門','门','mén','puerta','door'],['燈','灯','dēng','lámpara','lamp'],['書櫃','书柜','shūguì','librero','bookshelf'],
     ['洗衣機','洗衣机','xǐyījī','lavadora','washing machine'],['鏡子','镜子','jìngzi','espejo','mirror'],['枕頭','枕头','zhěntou','almohada','pillow'],
     ['棉被','棉被','miánbèi','cobija','blanket'],['浴室','浴室','yùshì','baño','bathroom'],['廚房','厨房','chúfáng','cocina','kitchen'],
     ['陽台','阳台','yángtái','balcón','balcony'],['樓梯','楼梯','lóutī','escaleras','stairs'] ]},
@@ -707,7 +811,7 @@ function speak(text){
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'zh-TW'; u.rate = RATE_VALUE[S.rate] || 0.65;
-    const v = voices.find(v=>/zh[-_]TW/i.test(v.lang)) || voices.find(v=>/^zh/i.test(v.lang));
+    const v = voices.find(v=>/zh[-_]TW/i.test(v.lang)) || voices.find(v=>/^zh/i.test(v.lang) && !/^(yue|zh[-_]hk)/i.test(v.lang));   // 排除廣東話
     if(v) u.voice = v;
     speechSynthesis.speak(u);
   }catch(e){}
@@ -717,10 +821,70 @@ function speak(text){
    七、排行榜接口（之後接 Firebase，只要把 enabled 改 true、補上兩個函式）
    ===================================================================== */
 const LEADERBOARD = {
-  enabled: false,
-  async submit(entry){ /* TODO: 寫入 Firestore。entry = {name, theme, score, correct, altitude, ts} */ },
-  async top(theme, n){ /* TODO: 回傳 [{name, score}, ...] */ return []; },
+  enabled: true,
+  /* 連到 memorma-24dab（和翻牌記憶、收納小達人共用專案）：匿名登入，每台裝置每個主題一筆，只留最高分 */
+  config: {
+    apiKey: "AIzaSyC_YSDn2OH6_GKKwCq0d8QFNl3fYXzTC60",
+    authDomain: "memorma-24dab.firebaseapp.com",
+    projectId: "memorma-24dab",
+    storageBucket: "memorma-24dab.firebasestorage.app",
+    messagingSenderId: "806709458465",
+    appId: "1:806709458465:web:f0d12acb2f911f2f165560"
+  },
+  _db: null, _uid: null, _ready: null,
+  init(){
+    if(this._ready) return this._ready;
+    this._ready = (async () => {
+      if(!window.firebase) throw new Error('no sdk');
+      firebase.initializeApp(this.config);
+      this._db = firebase.firestore();
+      this._uid = (await firebase.auth().signInAnonymously()).user.uid;
+    })();
+    return this._ready;
+  },
+  col(theme){ return this._db.collection('inkdragon_boards').doc(theme).collection('entries'); },
+  async submit(entry){
+    await this.init();
+    const ref = this.col(entry.theme).doc(this._uid);
+    const snap = await ref.get();
+    const old = snap.exists ? snap.data() : null;
+    const name = String(entry.name).slice(0,14) || '玩家';
+    if(old && old.score >= entry.score && old.name === name) return;
+    const best = (old && old.score >= entry.score) ? old : entry;
+    await ref.set({
+      name, score: Math.min(100000, Math.round(best.score)), correct: Math.min(5000, Math.round(best.correct)),
+      altitude: Math.min(1000000, Math.round(best.altitude)),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  },
+  async top(theme, n){
+    await this.init();
+    const snap = await this.col(theme).orderBy('score','desc').limit(n||10).get();
+    return snap.docs.map(d => Object.assign({ me: d.id === this._uid }, d.data()));
+  },
 };
+async function renderBoard(theme){
+  const box = $('lbBox');
+  const [tz, ts] = pair('lbTitle');
+  box.innerHTML = '<div class="lbT"><span class="zh">'+tz+'</span>'+(ts?'<small>'+ts+'</small>':'')+'</div><div class="lbM" id="lbBody"></div>';
+  const body = () => $('lbBody');
+  const msg = k => { const [z, m] = pair(k); return z + (m ? '　'+m : ''); };
+  body().textContent = msg('lbLoad');
+  try{
+    const rows = await LEADERBOARD.top(theme, 10);
+    if(!body()) return;
+    if(!rows.length){ body().textContent = msg('lbEmpty'); return; }
+    const ol = document.createElement('ol');
+    rows.forEach((r, i) => {
+      const li = document.createElement('li'); if(r.me) li.className = 'me';
+      const n = document.createElement('span'); n.className = 'n'; n.textContent = i+1;
+      const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = r.name;
+      const sc = document.createElement('span'); sc.className = 'sc'; sc.textContent = r.score;
+      li.append(n, nm, sc); ol.appendChild(li);
+    });
+    body().replaceWith(ol);
+  }catch(e){ console.warn(e); if(body()) body().textContent = msg('lbOff'); }
+}
 
 /* =====================================================================
    彩蛋：玩到特定分數時才會出現（說明文件裡不寫，讓學生自己發現）
@@ -884,7 +1048,13 @@ function endGame(){
     renderReview();
   }, 600);
   const entry = { name: ($('nameInp').value||'').trim() || '玩家', theme: curTheme().id, score, correct, altitude: alt, ts: Date.now() };
-  try{ if(LEADERBOARD.enabled && score>0) LEADERBOARD.submit(entry); }catch(e){}
+  if(LEADERBOARD.enabled){
+    const th = entry.theme;
+    (async () => {
+      try{ if(score>0) await LEADERBOARD.submit(entry); }catch(e){ console.warn(e); }
+      try{ await renderBoard(th); }catch(e){}
+    })();
+  }
 }
 function renderReview(){
   const rows = [];

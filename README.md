@@ -4,7 +4,7 @@
 
 - **網址：** https://wangchiapin.github.io/el-dragon-de-tinta/
 - **對象：** 學中文的西語學生（介面支援 中＋西／中＋英／只有中文）
-- **狀態：** v1-8，排行榜尚未接上
+- **狀態：** v1-8，排行榜已上線
 
 ## 玩法
 
@@ -50,15 +50,11 @@
 - **音效：** 吃對＝古箏往上刷；吃錯＝木魚加低沉的鑼；升級＝一串往上的古箏；結束＝古箏往下加鑼和二胡長音。
 - 樂句和樂器都在 `index.html` 的 `PHR`、`ERHU`、`SONG` 和 `zheng`／`erhu`／`wood`／`drum`／`gong` 幾個函式裡，要改旋律或音色可以從那裡下手。
 
-## 排行榜（待接）
+## 排行榜與遊玩紀錄
 
-`index.html` 裡有一段 `LEADERBOARD`（`enabled: false`），結束時會呼叫 `submit(entry)`，`entry` 的內容是：
-
-```
-{ name, theme, score, correct, altitude, ts }
-```
-
-接上時：把 `enabled` 改成 `true`，補上 `submit`（寫入 Firestore）和 `top`（讀前幾名）兩個函式，再在結果畫面的 `#lbBox` 顯示。
+- **排行榜：** 接到 Firebase 專案 `memorma-24dab`（和翻牌記憶、收納小達人共用），匿名登入，每台裝置每個主題只留一筆最高分，存在 `inkdragon_boards/<主題>/entries`。結果畫面顯示該主題前 10 名，自己那一筆會標出來。
+- **遊玩紀錄：** 頁面底部那段 `HGPlays` 會把訪客、開始、玩完寫到同一個專案的 `visits`、`plays`（每個遊戲共用的做法），出錯時靜默，不影響遊戲。
+- **一鍵靜音：** 左下角小喇叭，只關音樂和音效，不影響念字的語音；找不到中文（台灣）語音時會提示。
 
 ## 檔案
 
