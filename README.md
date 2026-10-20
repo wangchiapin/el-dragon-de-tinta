@@ -36,7 +36,7 @@
 | `script` | `trad`／`simp` | 字形 |
 | `lang` | `es`／`en`／`zh` | 中＋西／中＋英／只有中文 |
 | `phon` | `pinyin`／`zhuyin`／`both`／`off` | 拼音、注音、兩個都顯示、關 |
-| `rate` | `slow`／`normal`／`fast` | 語音速度 |
+| `rate` | `slow`／`normal`／`fast` | 語音速度（慢 0.45／正常 0.65／快 0.85，統一用 zh-TW 語音）|
 
 遊戲自己另存的資料：`dragonInk.theme`（上次選的主題）、`dragonInk.name`（名字）、`dragonInk.music`（背景音樂開關）、`dragonInk.best.<主題>`（每個主題的本機最高分）。
 

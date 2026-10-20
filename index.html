@@ -169,7 +169,7 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
    ===================================================================== */
 const SETTINGS_KEY = 'hanziGames.settings';
 const SET_OPTS = { script:['trad','simp'], lang:['es','en','zh'], phon:['pinyin','zhuyin','both','off'], rate:['slow','normal','fast'] };
-const RATE_VALUE = { slow:0.75, normal:0.92, fast:1.1 };
+const RATE_VALUE = { slow:0.45, normal:0.65, fast:0.85 };
 function readSettings(){
   const out = { v:1, script:'trad', lang:'es', phon:'pinyin', rate:'normal' };
   let saved = null;
@@ -691,7 +691,7 @@ function speak(text){
   try{
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'zh-TW'; u.rate = RATE_VALUE[S.rate] || 0.92;
+    u.lang = 'zh-TW'; u.rate = RATE_VALUE[S.rate] || 0.65;
     const v = voices.find(v=>/zh[-_]TW/i.test(v.lang)) || voices.find(v=>/^zh/i.test(v.lang));
     if(v) u.voice = v;
     speechSynthesis.speak(u);
