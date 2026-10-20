@@ -21,21 +21,26 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 #hud>*{pointer-events:none}
 #scoreBox .num{font-size:30px;line-height:1;font-weight:700;letter-spacing:1px}
 #scoreBox small{display:block;font-size:11px;color:var(--ink2);margin-top:3px}
-#themeChip{position:absolute;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top));text-align:center;background:rgba(242,236,224,.78);border:1px solid var(--ink3);border-radius:999px;padding:5px 16px;font-size:14px;white-space:nowrap}
+#themeChip{position:absolute;left:50%;transform:translateX(-50%);top:calc(58px + env(safe-area-inset-top));text-align:center;background:rgba(242,236,224,.9);border:1px solid var(--ink3);border-radius:999px;padding:4px 16px;font-size:14px;white-space:nowrap;max-width:60vw}
 #themeChip small{display:block;font-size:10px;color:var(--ink2)}
-#rightBox{display:flex;align-items:center;gap:10px}
-#hearts{font-size:20px;color:var(--red);letter-spacing:3px}
+#rightBox{display:flex;align-items:center;gap:8px}
+#hearts{position:absolute;right:16px;top:calc(62px + env(safe-area-inset-top));font-size:20px;line-height:1;color:var(--red);letter-spacing:3px}
 #hearts .off{color:var(--ink3);opacity:.55}
-#gear{pointer-events:auto!important;width:38px;height:38px;border-radius:50%;border:1px solid var(--ink3);background:rgba(242,236,224,.78);font-size:19px;line-height:1;color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.hb{pointer-events:auto!important;width:38px;height:38px;border-radius:50%;border:1px solid var(--ink3);background:rgba(242,236,224,.85);font:inherit;font-size:17px;line-height:1;color:var(--ink);display:grid;place-items:center;cursor:pointer;padding:0}
+#gear{font-size:19px}
+#pauseBtn{font-size:13px;letter-spacing:-1px}
+#musicBtn.off{opacity:.4;text-decoration:line-through}
 #toast{position:absolute;left:50%;top:24%;transform:translateX(-50%);font-size:26px;letter-spacing:4px;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s}
 #toast small{display:block;font-size:12px;letter-spacing:1px;color:var(--ink2);margin-top:4px}
 #toast.on{opacity:1}
 
 /* 畫面（選單、結果、設定） */
-.screen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto}
+.screen{position:absolute;inset:0;display:flex;align-items:flex-start;justify-content:center;padding:18px;overflow-y:auto}
+.screen>.card{margin:auto 0}
 .card{width:100%;max-width:380px;background:rgba(242,236,224,.88);border:1px solid var(--ink3);border-radius:18px;padding:26px 22px 22px;text-align:center;box-shadow:0 8px 30px rgba(28,27,25,.12)}
 h1{margin:0;font-family:var(--kai);font-size:46px;letter-spacing:8px;font-weight:700;line-height:1.1}
 h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2px;color:var(--ink2);font-weight:400;margin-top:6px}
+#pauseScr .card>div:first-child small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2px;color:var(--ink2);margin-top:4px}
 .sub{font-size:14px;line-height:1.7;margin:14px 0 4px;color:var(--ink)}
 .sub small{display:block;font-size:11.5px;line-height:1.55;color:var(--ink2);margin-top:3px}
 .lbl{font-size:14px;margin:16px 0 8px}
@@ -73,7 +78,8 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
   <div id="hud" hidden>
     <div id="scoreBox"><div class="num" id="scoreNum">0</div><small id="altNum"></small></div>
     <div id="themeChip"></div>
-    <div id="rightBox"><div id="hearts"></div><button id="gear" aria-label="settings">⚙</button></div>
+    <div id="rightBox"><button class="hb" id="musicBtn" aria-label="music">♪</button><button class="hb" id="pauseBtn" aria-label="pause">❚❚</button><button class="hb" id="gear" aria-label="settings">⚙</button></div>
+    <div id="hearts"></div>
   </div>
   <div id="toast"></div>
 
@@ -89,7 +95,7 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
       <button class="btn" id="startBtn" data-i18n="start"></button>
       <button class="btn ghost" id="menuGear" data-i18n="settings"></button>
       <div class="sub" data-i18n="dragHint" style="margin-top:16px"></div>
-      <div class="ver">v1-0</div>
+      <div class="ver">v1-1</div>
     </div>
   </div>
 
@@ -107,6 +113,16 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
     </div>
   </div>
 
+  <!-- 暫停 -->
+  <div class="screen dlgBg" id="pauseScr" hidden>
+    <div class="card">
+      <div style="font-size:26px;letter-spacing:6px;font-family:var(--kai)" data-i18n="pause"></div>
+      <button class="btn" id="resumeBtn" data-i18n="resume"></button>
+      <button class="btn ghost" id="pauseSetBtn" data-i18n="settings"></button>
+      <button class="btn ghost" id="pauseMenuBtn" data-i18n="toMenu"></button>
+    </div>
+  </div>
+
   <!-- 設定 -->
   <div class="screen dlgBg" id="dlg" hidden>
     <div class="card">
@@ -119,6 +135,8 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
         <button class="opt" data-v="pinyin">拼音</button><button class="opt" data-v="zhuyin">注音</button><button class="opt" data-v="both" data-i18n-opt="both"></button><button class="opt" data-v="off" data-i18n-opt="off"></button></div></div>
       <div class="setrow"><div class="l" data-i18n="optRate"></div><div class="row" id="gRate">
         <button class="opt" data-v="slow" data-i18n-opt="slow"></button><button class="opt" data-v="normal" data-i18n-opt="normal"></button><button class="opt" data-v="fast" data-i18n-opt="fast"></button></div></div>
+      <div class="setrow"><div class="l" data-i18n="optMusic"></div><div class="row" id="gMusic">
+        <button class="opt" data-v="on" data-i18n-opt="on"></button><button class="opt" data-v="off" data-i18n-opt="off"></button></div></div>
       <button class="btn" id="dlgDone" data-i18n="done"></button>
     </div>
   </div>
@@ -181,6 +199,10 @@ const I18N = {
   optRate:['語速','语速','Velocidad de voz','Voice speed'],
   both:['兩個','两个','Ambos','Both'],
   off:['關','关','No','Off'],
+  on:['開','开','Sí','On'],
+  pause:['暫停','暂停','Pausa','Paused'],
+  resume:['繼續','继续','Continuar','Resume'],
+  optMusic:['背景音樂','背景音乐','Música de fondo','Music'],
   slow:['慢','慢','Lento','Slow'],
   normal:['中','中','Normal','Normal'],
   fast:['快','快','Rápido','Fast'],
@@ -210,33 +232,89 @@ const THEMES = [
     ['米飯','米饭','mǐfàn','arroz','rice'],['麵','面','miàn','fideos','noodles'],['包子','包子','bāozi','bao (pan al vapor)','steamed bun'],
     ['餃子','饺子','jiǎozi','dumplings','dumplings'],['蛋','蛋','dàn','huevo','egg'],['牛肉','牛肉','niúròu','carne de res','beef'],
     ['豆腐','豆腐','dòufu','tofu','tofu'],['麵包','面包','miànbāo','pan','bread'],['湯','汤','tāng','sopa','soup'],
-    ['魚','鱼','yú','pescado','fish'],['青菜','青菜','qīngcài','verduras','greens'],['蛋糕','蛋糕','dàngāo','pastel','cake'] ]},
+    ['魚','鱼','yú','pescado','fish'],['青菜','青菜','qīngcài','verduras','greens'],['蛋糕','蛋糕','dàngāo','pastel','cake'],
+    ['飯糰','饭团','fàntuán','bola de arroz','rice ball'],['小籠包','小笼包','xiǎolóngbāo','xiaolongbao','soup dumpling'],['滷肉飯','卤肉饭','lǔròufàn','arroz con carne guisada','braised pork rice'],
+    ['炒飯','炒饭','chǎofàn','arroz frito','fried rice'],['雞肉','鸡肉','jīròu','pollo','chicken'],['豬肉','猪肉','zhūròu','cerdo','pork'],
+    ['牛奶','牛奶','niúnǎi','leche','milk'],['豆漿','豆浆','dòujiāng','leche de soya','soy milk'] ]},
   { id:'fruit', name:['水果','水果','Frutas','Fruit'], words:[
     ['蘋果','苹果','píngguǒ','manzana','apple'],['香蕉','香蕉','xiāngjiāo','plátano','banana'],['西瓜','西瓜','xīguā','sandía','watermelon'],
     ['葡萄','葡萄','pútáo','uvas','grapes'],['芒果','芒果','mángguǒ','mango','mango'],['橘子','橘子','júzi','mandarina','tangerine'],
     ['草莓','草莓','cǎoméi','fresa','strawberry'],['鳳梨','凤梨','fènglí','piña','pineapple'],['檸檬','柠檬','níngméng','limón','lemon'],
-    ['梨子','梨子','lízi','pera','pear'],['桃子','桃子','táozi','durazno','peach'],['木瓜','木瓜','mùguā','papaya','papaya'] ]},
+    ['梨子','梨子','lízi','pera','pear'],['桃子','桃子','táozi','durazno','peach'],['木瓜','木瓜','mùguā','papaya','papaya'],
+    ['櫻桃','樱桃','yīngtáo','cereza','cherry'],['奇異果','奇异果','qíyìguǒ','kiwi','kiwi'],['蓮霧','莲雾','liánwù','manzana de agua','wax apple'],
+    ['芭樂','芭乐','bālè','guayaba','guava'],['柚子','柚子','yòuzi','pomelo','pomelo'],['荔枝','荔枝','lìzhī','lichi','lychee'],
+    ['柿子','柿子','shìzi','caqui','persimmon'],['哈密瓜','哈密瓜','hāmìguā','melón','cantaloupe'] ]},
   { id:'animal', name:['動物','动物','Animales','Animals'], words:[
     ['狗','狗','gǒu','perro','dog'],['貓','猫','māo','gato','cat'],['鳥','鸟','niǎo','pájaro','bird'],
     ['馬','马','mǎ','caballo','horse'],['牛','牛','niú','vaca','cow'],['豬','猪','zhū','cerdo','pig'],
     ['羊','羊','yáng','oveja','sheep'],['兔子','兔子','tùzi','conejo','rabbit'],['老虎','老虎','lǎohǔ','tigre','tiger'],
-    ['猴子','猴子','hóuzi','mono','monkey'],['大象','大象','dàxiàng','elefante','elephant'],['熊貓','熊猫','xióngmāo','panda','panda'] ]},
+    ['猴子','猴子','hóuzi','mono','monkey'],['大象','大象','dàxiàng','elefante','elephant'],['熊貓','熊猫','xióngmāo','panda','panda'],
+    ['老鼠','老鼠','lǎoshǔ','ratón','mouse'],['雞','鸡','jī','gallina','chicken (animal)'],['蛇','蛇','shé','serpiente','snake'],
+    ['烏龜','乌龟','wūguī','tortuga','turtle'],['青蛙','青蛙','qīngwā','rana','frog'],['蝴蝶','蝴蝶','húdié','mariposa','butterfly'],
+    ['獅子','狮子','shīzi','león','lion'],['龍','龙','lóng','dragón','dragon'] ]},
   { id:'color', name:['顏色','颜色','Colores','Colors'], words:[
     ['紅色','红色','hóngsè','rojo','red'],['藍色','蓝色','lánsè','azul','blue'],['綠色','绿色','lǜsè','verde','green'],
     ['黃色','黄色','huángsè','amarillo','yellow'],['白色','白色','báisè','blanco','white'],['黑色','黑色','hēisè','negro','black'],
     ['紫色','紫色','zǐsè','morado','purple'],['粉紅色','粉红色','fěnhóngsè','rosa','pink'],['橘色','橘色','júsè','naranja','orange'],
-    ['灰色','灰色','huīsè','gris','gray'],['咖啡色','咖啡色','kāfēisè','café','brown'],['金色','金色','jīnsè','dorado','gold'] ]},
+    ['灰色','灰色','huīsè','gris','gray'],['咖啡色','咖啡色','kāfēisè','café','brown'],['金色','金色','jīnsè','dorado','gold'],
+    ['深藍色','深蓝色','shēnlánsè','azul oscuro','dark blue'],['淺藍色','浅蓝色','qiǎnlánsè','celeste','light blue'],['米色','米色','mǐsè','beige','beige'],
+    ['銀色','银色','yínsè','plateado','silver'],['透明','透明','tòumíng','transparente','transparent'],['彩色','彩色','cǎisè','de colores','colorful'],
+    ['橙色','橙色','chéngsè','anaranjado','orange (deep)'],['深綠色','深绿色','shēnlǜsè','verde oscuro','dark green'] ]},
   { id:'transport', name:['交通','交通','Transporte','Transport'], words:[
     ['公車','公车','gōngchē','autobús','bus'],['捷運','捷运','jiéyùn','metro','MRT'],['火車','火车','huǒchē','tren','train'],
     ['飛機','飞机','fēijī','avión','airplane'],['計程車','计程车','jìchéngchē','taxi','taxi'],['腳踏車','脚踏车','jiǎotàchē','bicicleta','bicycle'],
     ['機車','机车','jīchē','moto','scooter'],['汽車','汽车','qìchē','carro','car'],['船','船','chuán','barco','boat'],
-    ['高鐵','高铁','gāotiě','tren bala','high-speed rail'],['卡車','卡车','kǎchē','camión','truck'] ]},
+    ['高鐵','高铁','gāotiě','tren bala','high-speed rail'],['卡車','卡车','kǎchē','camión','truck'],
+    ['救護車','救护车','jiùhùchē','ambulancia','ambulance'],['消防車','消防车','xiāofángchē','camión de bomberos','fire truck'],['警車','警车','jǐngchē','patrulla','police car'],
+    ['直升機','直升机','zhíshēngjī','helicóptero','helicopter'],['紅綠燈','红绿灯','hónglǜdēng','semáforo','traffic light'],['斑馬線','斑马线','bānmǎxiàn','paso de peatones','crosswalk'],
+    ['機場','机场','jīchǎng','aeropuerto','airport'],['車站','车站','chēzhàn','estación','station'],['馬路','马路','mǎlù','calle','road'] ]},
   { id:'body', name:['身體','身体','Cuerpo','Body'], words:[
     ['頭','头','tóu','cabeza','head'],['手','手','shǒu','mano','hand'],['腳','脚','jiǎo','pie','foot'],
     ['眼睛','眼睛','yǎnjing','ojos','eyes'],['耳朵','耳朵','ěrduo','oreja','ear'],['鼻子','鼻子','bízi','nariz','nose'],
     ['嘴巴','嘴巴','zuǐba','boca','mouth'],['肚子','肚子','dùzi','barriga','belly'],['牙齒','牙齿','yáchǐ','dientes','teeth'],
-    ['頭髮','头发','tóufa','cabello','hair'],['肩膀','肩膀','jiānbǎng','hombro','shoulder'],['膝蓋','膝盖','xīgài','rodilla','knee'] ]},
+    ['頭髮','头发','tóufa','cabello','hair'],['肩膀','肩膀','jiānbǎng','hombro','shoulder'],['膝蓋','膝盖','xīgài','rodilla','knee'],
+    ['臉','脸','liǎn','cara','face'],['脖子','脖子','bózi','cuello','neck'],['背','背','bèi','espalda','back'],
+    ['手指','手指','shǒuzhǐ','dedo','finger'],['腿','腿','tuǐ','pierna','leg'],['手臂','手臂','shǒubì','brazo','arm'],
+    ['腰','腰','yāo','cintura','waist'],['嘴唇','嘴唇','zuǐchún','labios','lips'] ]},
+  { id:'clothes', name:['衣服','衣服','Ropa','Clothes'], words:[
+    ['襯衫','衬衫','chènshān','camisa','shirt'],['褲子','裤子','kùzi','pantalones','pants'],['裙子','裙子','qúnzi','falda','skirt'],
+    ['外套','外套','wàitào','chaqueta','jacket'],['帽子','帽子','màozi','gorra','hat'],['鞋子','鞋子','xiézi','zapatos','shoes'],
+    ['襪子','袜子','wàzi','calcetines','socks'],['眼鏡','眼镜','yǎnjìng','lentes','glasses'],['手錶','手表','shǒubiǎo','reloj','watch'],
+    ['皮包','皮包','píbāo','bolso','handbag'],['圍巾','围巾','wéijīn','bufanda','scarf'],['手套','手套','shǒutào','guantes','gloves'],
+    ['領帶','领带','lǐngdài','corbata','tie'],['洋裝','洋装','yángzhuāng','vestido','dress'],['牛仔褲','牛仔裤','niúzǎikù','jeans','jeans'],
+    ['雨衣','雨衣','yǔyī','impermeable','raincoat'],['拖鞋','拖鞋','tuōxié','chancletas','slippers'],['項鍊','项链','xiàngliàn','collar','necklace'],
+    ['口罩','口罩','kǒuzhào','mascarilla','face mask'],['運動鞋','运动鞋','yùndòngxié','tenis','sneakers'] ]},
+  { id:'job', name:['職業','职业','Profesiones','Jobs'], words:[
+    ['老師','老师','lǎoshī','profesor','teacher'],['醫生','医生','yīshēng','médico','doctor'],['護理師','护理师','hùlǐshī','enfermero','nurse'],
+    ['警察','警察','jǐngchá','policía','police officer'],['廚師','厨师','chúshī','cocinero','chef'],['司機','司机','sījī','chofer','driver'],
+    ['工程師','工程师','gōngchéngshī','ingeniero','engineer'],['律師','律师','lǜshī','abogado','lawyer'],['農夫','农夫','nóngfū','agricultor','farmer'],
+    ['老闆','老板','lǎobǎn','jefe','boss'],['作家','作家','zuòjiā','escritor','writer'],['畫家','画家','huàjiā','pintor','painter'],
+    ['歌手','歌手','gēshǒu','cantante','singer'],['演員','演员','yǎnyuán','actor','actor'],['記者','记者','jìzhě','periodista','reporter'],
+    ['店員','店员','diànyuán','dependiente','shop clerk'],['消防員','消防员','xiāofángyuán','bombero','firefighter'],['理髮師','理发师','lǐfàshī','peluquero','hairdresser'],
+    ['飛行員','飞行员','fēixíngyuán','piloto','pilot'],['會計','会计','kuàijì','contador','accountant'] ]},
+  { id:'weather', name:['天氣','天气','Clima','Weather'], words:[
+    ['晴天','晴天','qíngtiān','día soleado','sunny day'],['陰天','阴天','yīntiān','día nublado','cloudy day'],['下雨','下雨','xiàyǔ','llover','to rain'],
+    ['下雪','下雪','xiàxuě','nevar','to snow'],['颱風','台风','táifēng','tifón','typhoon'],['打雷','打雷','dǎléi','truenos','thunder'],
+    ['閃電','闪电','shǎndiàn','relámpago','lightning'],['彩虹','彩虹','cǎihóng','arcoíris','rainbow'],['太陽','太阳','tàiyáng','sol','sun'],
+    ['月亮','月亮','yuèliàng','luna','moon'],['星星','星星','xīngxing','estrellas','stars'],['雲','云','yún','nube','cloud'],
+    ['風','风','fēng','viento','wind'],['霧','雾','wù','niebla','fog'],['熱','热','rè','calor','hot'],
+    ['冷','冷','lěng','frío','cold'],['涼快','凉快','liángkuai','fresco','cool'],['溫暖','温暖','wēnnuǎn','templado','warm'],
+    ['潮濕','潮湿','cháoshī','húmedo','humid'],['地震','地震','dìzhèn','terremoto','earthquake'] ]},
+  { id:'home', name:['家裡','家里','En casa','At home'], words:[
+    ['桌子','桌子','zhuōzi','mesa','table'],['椅子','椅子','yǐzi','silla','chair'],['沙發','沙发','shāfā','sofá','sofa'],
+    ['床','床','chuáng','cama','bed'],['冰箱','冰箱','bīngxiāng','refrigerador','fridge'],['電視','电视','diànshì','televisión','TV'],
+    ['冷氣','冷气','lěngqì','aire acondicionado','air conditioner'],['電風扇','电风扇','diànfēngshàn','ventilador','fan'],['窗戶','窗户','chuānghu','ventana','window'],
+    ['門','门','mén','puerta','door'],['燈','灯','dēng','lámpara','lamp'],['書櫃','书柜','shūguì','librero','bookcase'],
+    ['洗衣機','洗衣机','xǐyījī','lavadora','washing machine'],['鏡子','镜子','jìngzi','espejo','mirror'],['枕頭','枕头','zhěntou','almohada','pillow'],
+    ['棉被','棉被','miánbèi','cobija','blanket'],['浴室','浴室','yùshì','baño','bathroom'],['廚房','厨房','chúfáng','cocina','kitchen'],
+    ['陽台','阳台','yángtái','balcón','balcony'],['樓梯','楼梯','lóutī','escaleras','stairs'] ]},
 ];
+
+// 高等級時，干擾字會混入「相近主題」的字（比較容易搞混）
+const SIMILAR = {
+  food:['fruit','home'], fruit:['food','animal'], animal:['body','weather'], color:['clothes','fruit'], transport:['job','home'],
+  body:['clothes','animal'], clothes:['body','color'], job:['transport','body'], weather:['color','animal'], home:['clothes','food'],
+};
 
 /* 拼音（帶聲調符號）→ 注音（和 跑吧 同一份轉換器） */
 const ZY = (function(){
@@ -330,7 +408,7 @@ try{ const t = localStorage.getItem('dragonInk.theme'); const i = THEMES.findInd
 let score=0, hearts=3, combo=0, correct=0, wrongCount=0, level=0, scroll=0, speed=70, spawnAcc=0, time=0;
 const MAX_HEARTS = 3;
 let items=[], parts=[], floats=[], shake=0, mouthT=0, hurtT=0;
-let bagGood=[], bagBad=[];
+let bagGood=[], bagBad=[], bagSim=[];
 let rafId=0, lastT=0;
 
 /* ---- 龍 ---- */
@@ -374,10 +452,17 @@ function refillBags(){
     const others = []; THEMES.forEach((t,i)=>{ if(i!==themeIdx) others.push(...t.words); });
     bagBad = shuffle(others);
   }
+  if(!bagSim.length){
+    const sim = []; (SIMILAR[th.id]||[]).forEach(id=>{ const t = THEMES.find(x=>x.id===id); if(t) sim.push(...t.words); });
+    bagSim = shuffle(sim);
+  }
 }
+// 等級越高，越常出現「相近主題」的干擾字（第 2 級開始，最多 55%）
+function simChance(){ return level < 2 ? 0 : Math.min(0.55, (level-1)*0.14); }
 function pickWord(good){
   refillBags();
-  const bag = good ? bagGood : bagBad;
+  let bag = good ? bagGood : bagBad;
+  if(!good && bagSim.length && Math.random() < simChance()) bag = bagSim;
   // 盡量不要和畫面上已經有的字重複
   for(let k=0;k<bag.length;k++){
     const w = bag[bag.length-1-k];
@@ -415,9 +500,7 @@ function spawnRow(){
     const good = needGood ? true : Math.random() < 0.42;
     const it = newItem(good);
     if(placeItem(it)) items.push(it);
-    else { // 放不下：把字放回袋子
-      (good ? bagGood : bagBad).push(it.w);
-    }
+    else { (good ? bagGood : bagBad).push(it.w); }  // 放不下：把字放回袋子
   }
 }
 
@@ -429,6 +512,7 @@ function ensureAudio(){
   try{
     if(!AC){ const C = window.AudioContext || window.webkitAudioContext; if(C) AC = new C(); }
     if(AC && AC.state === 'suspended') AC.resume();
+    startMusicLoop();
   }catch(e){}
 }
 function tone(freq, dur, type, vol){
@@ -441,6 +525,49 @@ function tone(freq, dur, type, vol){
     o.connect(g); g.connect(AC.destination);
     o.start(); o.stop(AC.currentTime+dur+0.02);
   }catch(e){}
+}
+// 背景音樂：D 五聲音階（D E F# A B），像古箏輕輕撥弦；只在遊戲進行中、沒暫停時出聲
+let musicOn = true;
+try{ musicOn = localStorage.getItem('dragonInk.music') !== '0'; }catch(e){}
+let musicGain = null, musicTimer = 0, musicStep = 3, musicBeat = 0;
+const SCALE = [293.66, 329.63, 369.99, 440.00, 493.88, 587.33, 659.25, 739.99];
+function pluck(freq, vol){
+  if(!AC || !musicGain) return;
+  try{
+    const t = AC.currentTime;
+    const o = AC.createOscillator(), o2 = AC.createOscillator(), g = AC.createGain();
+    o.type = 'triangle'; o.frequency.value = freq;
+    o2.type = 'sine'; o2.frequency.value = freq*2;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+1.6);
+    o.connect(g); o2.connect(g); g.connect(musicGain);
+    o.start(t); o2.start(t); o.stop(t+1.7); o2.stop(t+1.7);
+  }catch(e){}
+}
+function musicTick(){
+  musicTimer = 0;
+  const delay = 420 + Math.random()*380;
+  if(AC && musicOn && state === 'play' && !paused){
+    musicBeat++;
+    if(musicBeat % 8 === 1) pluck(146.83, 0.05);               // 低音
+    if(Math.random() > 0.18){                                    // 偶爾留白
+      musicStep = clamp(musicStep + Math.floor(rnd(-2,3)), 0, SCALE.length-1);
+      pluck(SCALE[musicStep], 0.045);
+    }
+  }
+  musicTimer = setTimeout(musicTick, delay);
+}
+function startMusicLoop(){
+  if(!AC) return;
+  if(!musicGain){ musicGain = AC.createGain(); musicGain.gain.value = 1; musicGain.connect(AC.destination); }
+  if(!musicTimer) musicTimer = setTimeout(musicTick, 300);
+}
+function setMusic(on){
+  musicOn = on;
+  try{ localStorage.setItem('dragonInk.music', on ? '1' : '0'); }catch(e){}
+  $('musicBtn').classList.toggle('off', !on);
+  markGroup('gMusic', on ? 'on' : 'off');
 }
 function sfxGood(){ tone(659,0.35,'triangle',0.13); setTimeout(()=>tone(988,0.4,'triangle',0.1),70); }
 function sfxBad(){ tone(150,0.3,'sawtooth',0.1); }
@@ -474,9 +601,9 @@ const LEADERBOARD = {
    八、遊戲流程
    ===================================================================== */
 function startGame(){
-  ensureAudio();
+  ensureAudio(); $('pauseScr').hidden = true;
   score=0; hearts=MAX_HEARTS; combo=0; correct=0; wrongCount=0; level=0; scroll=0; spawnAcc=0; time=0;
-  speed = 130; items=[]; parts=[]; floats=[]; shake=0; mouthT=0; hurtT=0; bagGood=[]; bagBad=[];
+  speed = 130; items=[]; parts=[]; floats=[]; shake=0; mouthT=0; hurtT=0; bagGood=[]; bagBad=[]; bagSim=[];
   initDragon();
   state = 'play'; paused = false;
   $('menu').hidden = true; $('res').hidden = true; $('hud').hidden = false;
@@ -539,7 +666,7 @@ function endGame(){
   try{ if(LEADERBOARD.enabled && score>0) LEADERBOARD.submit(entry); }catch(e){}
 }
 function toMenu(){
-  state = 'menu'; paused = false;
+  state = 'menu'; paused = false; $('pauseScr').hidden = true;
   $('res').hidden = true; $('hud').hidden = true; $('menu').hidden = false;
   items=[]; parts=[]; floats=[]; speed=70; initDragon();
 }
@@ -700,6 +827,8 @@ function blobPath(x,y,r,radii,rot){
 function drawItems(){
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for(const it of items){
+    ctx.globalAlpha = clamp((it.y - 70)/70, 0, 1);
+    if(ctx.globalAlpha <= 0) continue;
     // 淡淡的暈
     blobPath(it.x, it.y, it.r*1.22, it.blob, it.rot+0.4);
     ctx.fillStyle = 'rgba(28,27,25,0.10)'; ctx.fill();
@@ -712,6 +841,7 @@ function drawItems(){
     if(it.read){ ctx.font = '600 13px '+FONT_UI; ctx.fillStyle = '#3a3733'; ctx.fillText(it.read, it.x, yy); yy += 15; }
     if(it.trans){ ctx.font = '11px '+FONT_UI; ctx.fillStyle = '#6a665d'; ctx.fillText(it.trans, it.x, yy); }
   }
+  ctx.globalAlpha = 1;
 }
 function drawParts(){
   for(const p of parts){
@@ -771,49 +901,80 @@ function drawDragon(){
   ctx.strokeStyle = 'rgba(28,27,25,0.5)'; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(tx,tl.y); ctx.quadraticCurveTo(tx+9*Math.sin(time*3),tl.y+10,tx+4,tl.y+22); ctx.stroke();
 
-  // 頭
+  // 頭：長長的吻、分岔的鹿角、飄動的長鬚（龍頭朝上，身體在下面）
   const tilt = clamp(dragon.vx*0.0016, -0.45, 0.45);
   ctx.save();
   ctx.translate(dragon.x, dragon.y); ctx.rotate(tilt);
   const hurt = hurtT > 0 && Math.floor(hurtT*20)%2 === 0;
   const ink = hurt ? 'rgba(184,54,43,0.95)' : 'rgba(28,27,25,0.97)';
-  // 鬃毛（朱紅一點點）
+  const sw = Math.sin(time*3.5);
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  // 鬃毛（朱紅一點點，從後腦往下飄）
   ctx.strokeStyle = 'rgba(184,54,43,0.78)'; ctx.lineWidth = 2.2;
-  for(let s=-1;s<=1;s+=2){
-    for(let j=0;j<3;j++){
-      ctx.beginPath(); ctx.moveTo(s*10,-2+j*4);
-      ctx.bezierCurveTo(s*(24+j*4),6+j*5+Math.sin(time*5+j)*3, s*(30+j*5),22+j*6, s*(26+j*3),34+j*7+Math.sin(time*4+j*2)*4);
+  for(let sd=-1;sd<=1;sd+=2){
+    for(let j=0;j<4;j++){
+      ctx.beginPath(); ctx.moveTo(sd*9,4+j*4);
+      ctx.bezierCurveTo(sd*(22+j*4),10+j*5+Math.sin(time*5+j)*3, sd*(28+j*5),26+j*6, sd*(23+j*3),40+j*7+Math.sin(time*4+j*2)*4);
       ctx.stroke();
     }
   }
-  // 角
-  ctx.strokeStyle = ink; ctx.lineWidth = 3.2;
-  for(let s=-1;s<=1;s+=2){
-    ctx.beginPath(); ctx.moveTo(s*6,-10); ctx.quadraticCurveTo(s*20,-16,s*25,2);
-    ctx.moveTo(s*17,-14); ctx.lineTo(s*24,-24); ctx.stroke();
+  // 鹿角：向後彎，帶兩個分岔
+  ctx.strokeStyle = ink; ctx.lineWidth = 3.6;
+  for(let sd=-1;sd<=1;sd+=2){
+    ctx.beginPath(); ctx.moveTo(sd*7,-8); ctx.quadraticCurveTo(sd*22,-12,sd*28,6); ctx.stroke();
+    ctx.lineWidth = 2.6;
+    ctx.beginPath(); ctx.moveTo(sd*18,-11); ctx.quadraticCurveTo(sd*24,-22,sd*33,-24); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(sd*25,-3); ctx.quadraticCurveTo(sd*34,-8,sd*40,-3); ctx.stroke();
+    ctx.lineWidth = 3.6;
   }
-  // 臉
+  // 後腦與脖子
   ctx.fillStyle = ink;
-  ctx.beginPath(); ctx.ellipse(0,0,16,19,0,0,6.283); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(0,-22,11,13,0,0,6.283); ctx.fill();
-  // 嘴巴（吃到字時張開）
+  ctx.beginPath(); ctx.ellipse(0,4,15,17,0,0,6.283); ctx.fill();
+  // 長吻：從眉心一路伸到鼻頭，前端微微上翹
+  ctx.beginPath();
+  ctx.moveTo(-13,-6);
+  ctx.bezierCurveTo(-15,-24,-12,-36,-8,-42);
+  ctx.quadraticCurveTo(0,-49,8,-42);
+  ctx.bezierCurveTo(12,-36,15,-24,13,-6);
+  ctx.closePath(); ctx.fill();
+  // 鼻頭，和吻上留白的飛白筆觸
+  ctx.beginPath(); ctx.ellipse(0,-44,9,5.5,0,0,6.283); ctx.fill();
+  ctx.strokeStyle = 'rgba(242,236,224,0.22)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(-7,-12); ctx.quadraticCurveTo(-9,-28,-6,-40);
+  ctx.moveTo(7,-12); ctx.quadraticCurveTo(9,-28,6,-40); ctx.stroke();
+  // 嘴線；吃到字時嘴巴張開
   if(mouthT > 0){
-    ctx.fillStyle = '#f2ece0'; ctx.beginPath(); ctx.ellipse(0,-30,6.5,6,0,0,6.283); ctx.fill();
-    ctx.fillStyle = 'rgba(184,54,43,0.85)'; ctx.beginPath(); ctx.ellipse(0,-28,3.8,3,0,0,6.283); ctx.fill();
+    ctx.fillStyle = '#f2ece0'; ctx.beginPath(); ctx.ellipse(0,-37,7.5,9,0,0,6.283); ctx.fill();
+    ctx.fillStyle = 'rgba(184,54,43,0.88)'; ctx.beginPath(); ctx.ellipse(0,-34,4.2,4.6,0,0,6.283); ctx.fill();
+    ctx.fillStyle = '#f2ece0';
+    ctx.beginPath(); ctx.moveTo(-4,-44); ctx.lineTo(-2.5,-40); ctx.lineTo(-1,-44); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(4,-44); ctx.lineTo(2.5,-40); ctx.lineTo(1,-44); ctx.fill();
+  } else {
+    ctx.strokeStyle = 'rgba(242,236,224,0.4)'; ctx.lineWidth = 1.3;
+    ctx.beginPath(); ctx.moveTo(0,-30); ctx.lineTo(0,-43); ctx.stroke();
   }
-  // 鼻孔和眼睛
+  // 眉骨（讓眼神有點兇）和眼睛
+  ctx.strokeStyle = ink; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(-15,-12); ctx.lineTo(-5,-19); ctx.moveTo(15,-12); ctx.lineTo(5,-19); ctx.stroke();
   ctx.fillStyle = '#f2ece0';
-  ctx.beginPath(); ctx.ellipse(-8,-8,4.6,3,-0.3,0,6.283); ctx.ellipse(8,-8,4.6,3,0.3,0,6.283); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-8.5,-11,4.8,3,0.5,0,6.283); ctx.ellipse(8.5,-11,4.8,3,-0.5,0,6.283); ctx.fill();
   ctx.fillStyle = hurt ? '#1c1b19' : 'rgba(184,54,43,0.95)';
-  ctx.beginPath(); ctx.arc(-8,-8,2.2,0,6.283); ctx.arc(8,-8,2.2,0,6.283); ctx.fill();
-  // 鬍鬚
-  ctx.strokeStyle = 'rgba(28,27,25,0.8)'; ctx.lineWidth = 1.5;
-  for(let s=-1;s<=1;s+=2){
-    const w = Math.sin(time*3.5)*6;
-    ctx.beginPath(); ctx.moveTo(s*8,-26);
-    ctx.bezierCurveTo(s*(26+w),-34, s*(34+w),-14, s*(46+w*1.3),-6+w);
+  ctx.beginPath(); ctx.arc(-8.5,-11,2.2,0,6.283); ctx.arc(8.5,-11,2.2,0,6.283); ctx.fill();
+  // 長鬚：從嘴邊往兩側飄，再往後捲
+  ctx.strokeStyle = 'rgba(28,27,25,0.82)';
+  for(let sd=-1;sd<=1;sd+=2){
+    ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.moveTo(sd*9,-37);
+    ctx.bezierCurveTo(sd*(26+sw*4),-40, sd*(48+sw*6),-12, sd*(36+sw*8),30+sw*4);
+    ctx.stroke();
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(sd*8,-32);
+    ctx.bezierCurveTo(sd*(20-sw*3),-30, sd*(34-sw*5),-4, sd*(26-sw*5),26);
     ctx.stroke();
   }
+  // 下巴的小鬍子
+  ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.moveTo(0,-30); ctx.quadraticCurveTo(sw*4,-20,sw*6,-12); ctx.stroke();
   ctx.restore();
 }
 
@@ -882,13 +1043,22 @@ function applyLang(){
   document.title = tz;
 }
 function markGroup(id, val){ document.querySelectorAll('#'+id+' .opt').forEach(b=>b.classList.toggle('on', b.dataset.v === val)); }
-function syncSettingsUI(){ markGroup('gScript',S.script); markGroup('gLang',S.lang); markGroup('gPhon',S.phon); markGroup('gRate',S.rate); }
+function syncSettingsUI(){ markGroup('gScript',S.script); markGroup('gLang',S.lang); markGroup('gPhon',S.phon); markGroup('gRate',S.rate); markGroup('gMusic', musicOn ? 'on' : 'off'); $('musicBtn').classList.toggle('off', !musicOn); }
 [['gScript','script'],['gLang','lang'],['gPhon','phon'],['gRate','rate']].forEach(([id,k])=>{
   document.querySelectorAll('#'+id+' .opt').forEach(b=>b.addEventListener('click', ()=>{
     S[k] = b.dataset.v; writeSettings(S); syncSettingsUI(); applyLang();
   }));
 });
 let dlgFromPlay = false;
+function pauseGame(){
+  if(state !== 'play' || paused) return;
+  paused = true; $('pauseScr').hidden = false;
+  try{ speechSynthesis.cancel(); }catch(e){}
+}
+function resumeGame(){
+  $('pauseScr').hidden = true;
+  paused = false; lastT = performance.now();
+}
 function openSettings(){
   if($('dlg').hidden === false) return;
   dlgFromPlay = (state === 'play');
@@ -897,9 +1067,16 @@ function openSettings(){
 }
 function closeSettings(){
   $('dlg').hidden = true;
-  if(dlgFromPlay){ paused = false; lastT = performance.now(); }
+  // 從暫停畫面進來的，回到暫停畫面；直接按 ⚙️ 進來的，關掉就繼續玩
+  if(dlgFromPlay && $('pauseScr').hidden){ paused = false; lastT = performance.now(); }
 }
 $('gear').addEventListener('click', openSettings);
+$('pauseBtn').addEventListener('click', pauseGame);
+$('musicBtn').addEventListener('click', ()=>{ ensureAudio(); setMusic(!musicOn); });
+$('resumeBtn').addEventListener('click', resumeGame);
+$('pauseSetBtn').addEventListener('click', openSettings);
+$('pauseMenuBtn').addEventListener('click', ()=>{ $('pauseScr').hidden = true; toMenu(); });
+document.querySelectorAll('#gMusic .opt').forEach(b=>b.addEventListener('click', ()=>{ ensureAudio(); setMusic(b.dataset.v === 'on'); }));
 $('menuGear').addEventListener('click', openSettings);
 $('dlgDone').addEventListener('click', closeSettings);
 $('startBtn').addEventListener('click', ()=>{
@@ -910,7 +1087,7 @@ $('againBtn').addEventListener('click', startGame);
 $('toMenuBtn').addEventListener('click', toMenu);
 try{ $('nameInp').value = localStorage.getItem('dragonInk.name') || ''; }catch(e){}
 $('nameInp').placeholder = '玩家';
-document.addEventListener('visibilitychange', ()=>{ if(document.hidden && state === 'play') openSettings(); });
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden && state === 'play') pauseGame(); });
 
 /* ---- 輸入：手指／滑鼠相對拖動、方向鍵 ---- */
 let dragging = false, lastPX = 0, lastPY = 0;
@@ -938,7 +1115,11 @@ function keyDir(e, v){
 window.addEventListener('keydown', e=>{
   if(e.target && e.target.tagName === 'INPUT') return;
   if(keyDir(e,true)) e.preventDefault();
-  if(e.key === 'Escape' && state === 'play'){ $('dlg').hidden ? openSettings() : closeSettings(); }
+  if(e.key === 'Escape' && state === 'play'){
+    if(!$('dlg').hidden) closeSettings();
+    else if(!$('pauseScr').hidden) resumeGame();
+    else pauseGame();
+  }
 });
 window.addEventListener('keyup', e=>{ keyDir(e,false); });
 window.addEventListener('blur', ()=>{ held.l=held.r=held.u=held.d=false; });
@@ -955,7 +1136,7 @@ function loop(t){
   rafId = requestAnimationFrame(loop);
 }
 window.addEventListener('resize', resize);
-resize(); initDragon(); applyLang();
+resize(); initDragon(); applyLang(); syncSettingsUI();
 lastT = performance.now();
 rafId = requestAnimationFrame(loop);
 
