@@ -64,6 +64,18 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
 #res .cmt small{display:block;font-size:12px;color:var(--ink2);font-family:var(--serif)}
 #res .rec{color:var(--red);font-size:15px;margin-top:8px;letter-spacing:2px}
 #lbBox{margin-top:12px;font-size:13px;text-align:left}
+#revBox{margin-top:14px;text-align:left}
+#revBox .rvT{font-size:15px;text-align:center}
+#revBox .rvT small{display:block;font-size:11px;color:var(--ink2)}
+#revBox .rvH{font-size:11px;color:var(--ink3);text-align:center;margin:2px 0 6px}
+#revList{max-height:34vh;overflow-y:auto;border-top:1px solid rgba(141,136,126,.5)}
+.rv{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid rgba(141,136,126,.35);cursor:pointer}
+.rv .w{min-width:74px;font-family:var(--kai);font-size:22px;font-weight:700;line-height:1.1}
+.rv .m{flex:1;font-size:12.5px;line-height:1.35;color:var(--ink)}
+.rv .m small{display:block;font-size:11px;color:var(--ink2)}
+.rv .tag{flex:none;font-size:11px;border-radius:999px;padding:2px 9px;border:1px solid var(--ink3);color:var(--ink2);white-space:nowrap}
+.rv .tag.w2{border-color:var(--red);color:var(--red)}
+#revNone{text-align:center;font-size:14px;margin-top:6px}
 .dlgBg{background:rgba(28,27,25,.35)}
 .setrow{margin-top:14px;text-align:center}
 .setrow .l{font-size:13px;margin-bottom:6px}
@@ -95,7 +107,7 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
       <button class="btn" id="startBtn" data-i18n="start"></button>
       <button class="btn ghost" id="menuGear" data-i18n="settings"></button>
       <div class="sub" data-i18n="dragHint" style="margin-top:16px"></div>
-      <div class="ver">v1-1</div>
+      <div class="ver">v1-2</div>
     </div>
   </div>
 
@@ -107,6 +119,12 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
       <div class="stat" id="resStat"></div>
       <div class="rec" id="resRec" hidden></div>
       <div class="cmt" id="resCmt"></div>
+      <div id="revBox" hidden>
+        <div class="rvT" id="revT"></div>
+        <div class="rvH" id="revH"></div>
+        <div id="revList"></div>
+        <div id="revNone" hidden></div>
+      </div>
       <div id="lbBox" hidden></div>
       <button class="btn" id="againBtn" data-i18n="again"></button>
       <button class="btn ghost" id="toMenuBtn" data-i18n="toMenu"></button>
@@ -193,6 +211,11 @@ const I18N = {
   best:['最高分','最高分','Récord','Best'],
   newRec:['新紀錄！','新纪录！','¡Nuevo récord!','New record!'],
   eaten:['吃對','吃对','Aciertos','Correct'],
+  revTitle:['複習清單','复习清单','Para repasar','To review'],
+  revHint:['點一下，聽讀音','点一下，听读音','Toca para escuchar','Tap to listen'],
+  revWrong:['吃錯','吃错','Error','Wrong'],
+  revMiss:['漏掉','漏掉','Perdida','Missed'],
+  revNone:['沒有要複習的字，太棒了！','没有要复习的字，太棒了！','¡Nada que repasar, genial!','Nothing to review — great!'],
   optScript:['字形','字形','Escritura','Script'],
   optLang:['翻譯','翻译','Traducción','Translation'],
   optPhon:['讀音','读音','Pronunciación','Reading'],
@@ -409,13 +432,14 @@ let score=0, hearts=3, combo=0, correct=0, wrongCount=0, level=0, scroll=0, spee
 const MAX_HEARTS = 3;
 let items=[], parts=[], floats=[], shake=0, mouthT=0, hurtT=0;
 let bagGood=[], bagBad=[], bagSim=[];
+let wrongMap = new Map(), missMap = new Map();   // 吃錯的字、漏掉的字（字 → 次數）
 let rafId=0, lastT=0;
 
 /* ---- 龍 ---- */
-const dragon = { x:0, y:0, tx:0, ty:0, vx:0, pts:[] };
+const dragon = { x:0, y:0, tx:0, ty:0, vx:0, vy:0, ang:0, side:1, pts:[] };
 const SEG_N = 26, SEG_GAP = 13;
 function initDragon(){
-  dragon.x = dragon.tx = W/2; dragon.y = dragon.ty = H*0.78; dragon.vx = 0;
+  dragon.x = dragon.tx = W/2; dragon.y = dragon.ty = H*0.78; dragon.vx = 0; dragon.vy = 0; dragon.ang = 0; dragon.side = 1;
   dragon.pts = [];
   for(let i=0;i<SEG_N;i++) dragon.pts.push({ x:dragon.x, y:dragon.y + i*SEG_GAP });
 }
@@ -603,7 +627,7 @@ const LEADERBOARD = {
 function startGame(){
   ensureAudio(); $('pauseScr').hidden = true;
   score=0; hearts=MAX_HEARTS; combo=0; correct=0; wrongCount=0; level=0; scroll=0; spawnAcc=0; time=0;
-  speed = 130; items=[]; parts=[]; floats=[]; shake=0; mouthT=0; hurtT=0; bagGood=[]; bagBad=[]; bagSim=[];
+  speed = 130; items=[]; parts=[]; floats=[]; shake=0; mouthT=0; hurtT=0; bagGood=[]; bagBad=[]; bagSim=[]; wrongMap = new Map(); missMap = new Map();
   initDragon();
   state = 'play'; paused = false;
   $('menu').hidden = true; $('res').hidden = true; $('hud').hidden = false;
@@ -629,6 +653,7 @@ function eat(it){
     renderHud();
   } else {
     hearts--; combo = 0; wrongCount++;
+    wrongMap.set(it.w, (wrongMap.get(it.w)||0) + 1);
     shake = 0.35; hurtT = 0.5;
     inkSplash(it.x, it.y, 26, 1.6, true);
     sfxBad();
@@ -661,9 +686,39 @@ function endGame(){
     const ck = correct<=0?'c0':correct<10?'c1':correct<25?'c2':correct<50?'c3':'c4';
     fill($('resCmt'), ck);
     $('lbBox').hidden = !LEADERBOARD.enabled;
+    renderReview();
   }, 600);
   const entry = { name: ($('nameInp').value||'').trim() || '玩家', theme: curTheme().id, score, correct, altitude: alt, ts: Date.now() };
   try{ if(LEADERBOARD.enabled && score>0) LEADERBOARD.submit(entry); }catch(e){}
+}
+function renderReview(){
+  const rows = [];
+  wrongMap.forEach((n,w)=>rows.push({ w, n, wrong:true }));
+  missMap.forEach((n,w)=>{ if(!wrongMap.has(w)) rows.push({ w, n, wrong:false }); });
+  // 吃錯的排前面，次數多的優先
+  rows.sort((a,b)=> (b.wrong - a.wrong) || (b.n - a.n));
+  const box = $('revBox'), list = $('revList');
+  list.innerHTML = '';
+  fill($('revT'), 'revTitle');
+  if(!rows.length){
+    box.hidden = correct === 0 && wrongCount === 0;      // 一個字都沒玩到就不顯示
+    $('revH').textContent = ''; list.hidden = true;
+    $('revNone').hidden = false; fill($('revNone'), 'revNone');
+    return;
+  }
+  box.hidden = false; list.hidden = false; $('revNone').hidden = true;
+  $('revH').textContent = pair('revHint')[0] + (S.lang === 'zh' ? '' : ' · ' + pair('revHint')[1]);
+  rows.slice(0, 20).forEach(r=>{
+    const text = wText(r.w), read = wRead(r.w), tr = wTrans(r.w);
+    const div = document.createElement('div'); div.className = 'rv';
+    const tag = pair(r.wrong ? 'revWrong' : 'revMiss')[0] + (r.n > 1 ? ' ×'+r.n : '');
+    div.innerHTML = '<div class="w"></div><div class="m"></div><span class="tag'+(r.wrong?' w2':'')+'"></span>';
+    div.querySelector('.w').textContent = text;
+    div.querySelector('.m').innerHTML = (read ? '<span>'+read+'</span>' : '') + (tr ? '<small>'+tr+'</small>' : '');
+    div.querySelector('.tag').textContent = tag;
+    div.addEventListener('click', ()=>speak(text));
+    list.appendChild(div);
+  });
 }
 function toMenu(){
   state = 'menu'; paused = false; $('pauseScr').hidden = true;
@@ -687,10 +742,19 @@ function update(dt){
   } else {
     dragon.tx = W/2 + Math.sin(time*0.7)*W*0.18; dragon.ty = H*0.78 + Math.sin(time*1.1)*10;
   }
-  const px = dragon.x;
+  const px = dragon.x, py = dragon.y;
   dragon.x += (dragon.tx-dragon.x)*Math.min(1,dt*12);
   dragon.y += (dragon.ty-dragon.y)*Math.min(1,dt*12);
   dragon.vx = (dragon.x-px)/Math.max(dt,0.001);
+  dragon.vy = (dragon.y-py)/Math.max(dt,0.001);
+  // 頭轉向：朝著移動的方向。往下退時最多轉到側面（不然會壓到自己的身體）；慢下來就慢慢回正
+  const mv = Math.hypot(dragon.vx, dragon.vy);
+  if(Math.abs(dragon.vx) > 8) dragon.side = dragon.vx > 0 ? 1 : -1;
+  let want = Math.atan2(dragon.vx, -dragon.vy);                 // 0＝朝上，正＝往右
+  const LIM = 1.35;                                             // 約 77 度
+  if(Math.abs(want) > LIM) want = dragon.side * LIM;
+  want *= clamp((mv-25)/140, 0, 1);
+  dragon.ang += (want-dragon.ang)*Math.min(1,dt*9);
 
   // 龍身：後一節跟著前一節
   const P = dragon.pts;
@@ -710,7 +774,8 @@ function update(dt){
   if(playing){
     spawnAcc += spd*dt;
     if(spawnAcc >= gapDist()){ spawnAcc = 0; spawnRow(); }
-    const hx = dragon.x, hy = dragon.y - 10;
+    // 嘴巴的位置跟著頭的方向走
+    const hx = dragon.x + Math.sin(dragon.ang)*12, hy = dragon.y - Math.cos(dragon.ang)*12;
     for(let i=items.length-1;i>=0;i--){
       const it = items[i];
       if(it.gone){ items.splice(i,1); continue; }
@@ -721,7 +786,10 @@ function update(dt){
         if(state !== 'play') break;
         continue;
       }
-      if(it.y > H + it.r + 50) items.splice(i,1);
+      if(it.y > H + it.r + 50){
+        if(it.good) missMap.set(it.w, (missMap.get(it.w)||0) + 1);   // 對的字沒吃到
+        items.splice(i,1);
+      }
     }
   } else {
     items.length = 0;
@@ -902,7 +970,7 @@ function drawDragon(){
   ctx.beginPath(); ctx.moveTo(tx,tl.y); ctx.quadraticCurveTo(tx+9*Math.sin(time*3),tl.y+10,tx+4,tl.y+22); ctx.stroke();
 
   // 頭：長長的吻、分岔的鹿角、飄動的長鬚（龍頭朝上，身體在下面）
-  const tilt = clamp(dragon.vx*0.0016, -0.45, 0.45);
+  const tilt = dragon.ang;
   ctx.save();
   ctx.translate(dragon.x, dragon.y); ctx.rotate(tilt);
   const hurt = hurtT > 0 && Math.floor(hurtT*20)%2 === 0;
@@ -1142,7 +1210,8 @@ rafId = requestAnimationFrame(loop);
 
 // 給自動測試用（唯讀的狀態，不影響遊戲）
 window.__dragon = {
-  get state(){ return { state, paused, score, hearts, combo, correct, level, speed, W, H, items: items.map(i=>({text:i.text,good:i.good,x:i.x,y:i.y,r:i.r})), dragon:{x:dragon.x,y:dragon.y} }; },
+  get review(){ return { wrong:[...wrongMap.keys()].map(w=>w[0]), miss:[...missMap.keys()].map(w=>w[0]) }; },
+  get state(){ return { state, paused, score, hearts, combo, correct, level, speed, W, H, items: items.map(i=>({text:i.text,good:i.good,x:i.x,y:i.y,r:i.r})), dragon:{x:dragon.x,y:dragon.y,ang:dragon.ang} }; },
   moveTo(x,y){ dragon.tx = x; dragon.ty = y; clampTarget(); },
   settings: S,
 };
