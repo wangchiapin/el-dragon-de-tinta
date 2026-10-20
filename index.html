@@ -722,7 +722,7 @@ function speak(text){
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'zh-TW'; u.rate = RATE_VALUE[S.rate] || 0.65;
-    const v = voices.find(v=>/zh[-_]TW/i.test(v.lang)) || voices.find(v=>/^zh/i.test(v.lang));
+    const v = voices.find(v=>/zh[-_]TW/i.test(v.lang)) || voices.find(v=>/^zh/i.test(v.lang) && !/^(yue|zh[-_]hk)/i.test(v.lang));   // 排除廣東話
     if(v) u.voice = v;
     speechSynthesis.speak(u);
   }catch(e){}
