@@ -790,6 +790,7 @@ function applySet(d){
   (Array.isArray(d.custom) ? d.custom : []).slice(0, CUSTOM_MAX).forEach(c=>{
     if(!c || !/^[a-z0-9]{1,32}$/.test(String(c.id||'')) || KNOWN.has(c.id)) return;
     const words = (Array.isArray(c.words) ? c.words : []).slice(0, CUSTOM_WORDS_MAX).map(w=>{
+      if(typeof w === 'string') w = w.split('\t');   // 資料庫每詞存成一個字串（五欄用 Tab 隔開）
       if(!Array.isArray(w) || typeof w[0] !== 'string' || !w[0].trim()) return null;
       const t = w[0].trim().slice(0, 8);
       return [t, String(w[1]||t).trim().slice(0, 8), String(w[2]||'').trim().slice(0, 60), String(w[3]||'').trim().slice(0, 60), String(w[4]||'').trim().slice(0, 60)];
