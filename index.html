@@ -65,6 +65,9 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
 .themes .opt{padding:0 4px}
 .zh{display:block}
 .namebox{width:100%;max-width:300px;height:44px;border-radius:999px;border:1px solid var(--ink3);background:rgba(255,255,255,.4);text-align:center;font:inherit;font-size:15px;color:var(--ink);margin:0 auto;display:block}
+.note{font-size:12px;line-height:1.5;color:var(--ink2);margin-top:10px}
+.note small{display:block;font-size:11px;margin-top:2px}
+.namebox.need{border-color:var(--red)}
 .ver{margin-top:14px;font-size:10px;color:var(--ink3)}
 #res .big{font-size:56px;font-weight:700;line-height:1.1;margin:10px 0 2px}
 #res .stat{font-size:13px;color:var(--ink2);margin-top:6px}
@@ -120,10 +123,11 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
       <h1><span data-i18n-zh="title"></span><small data-i18n-sm="title"></small></h1>
       <div class="lbl" data-i18n="chooseTheme"></div>
       <div class="themes" id="themeGrid"></div>
+      <div class="note" id="modeNote" hidden></div>
       <div class="lbl" data-i18n="name"></div>
       <input class="namebox" id="nameInp" maxlength="12">
       <button class="btn" id="startBtn" data-i18n="start"></button>
-      <div class="ver" style="margin-top:14px">v1-9</div>
+      <div class="ver" style="margin-top:14px">v1-10</div>
     </div>
   </div>
 
@@ -340,6 +344,15 @@ const I18N = {
   slow:['慢','慢','Lento','Slow'],
   normal:['中','中','Normal','Normal'],
   fast:['快','快','Rápido','Fast'],
+  maint:['維修中，請稍後再來','维修中，请稍后再来','En mantenimiento, vuelve más tarde','Under maintenance — please come back later'],
+  linkBad:['這個連結已失效，請向老師確認','这个链接已失效，请向老师确认','Este enlace ya no es válido; pregunta a tu profesor','This link is no longer valid — please ask your teacher'],
+  linkOff:['暫時連不上，請稍後再試','暂时连不上，请稍后再试','No se pudo conectar; inténtalo más tarde','Could not connect — please try again later'],
+  noteClass:['班級模式：請輸入名字，成績會自動回傳給老師','班级模式：请输入名字，成绩会自动回传给老师','Modo de clase: escribe tu nombre; tu resultado se enviará al profesor','Class mode: enter your name — your score is sent to your teacher'],
+  notePractice:['練習模式：成績不會記錄','练习模式：成绩不会记录','Modo de práctica: no se guarda el resultado','Practice mode: scores are not saved'],
+  sentOk:['成績已回傳給老師','成绩已回传给老师','Resultado enviado al profesor','Score sent to your teacher'],
+  sentFail:['成績沒有送出，請檢查網路','成绩没有送出，请检查网络','No se pudo enviar el resultado; revisa tu conexión','Score not sent — check your connection'],
+  sentExpired:['這個班級連結目前無法記錄成績，請通知老師','这个班级链接目前无法记录成绩，请通知老师','Este enlace de clase no puede guardar resultados; avisa a tu profesor','This class link cannot record scores right now — tell your teacher'],
+  clsBoard:['班級排行榜','班级排行榜','Clasificación de la clase','Class leaderboard'],
   c0:['下次再來，龍在等你。','下次再来，龙在等你。','La próxima vez, el dragón te espera.','Next time — the dragon is waiting.'],
   c1:['龍剛展翅，繼續加油。','龙刚展翅，继续加油。','El dragón apenas despliega las alas. ¡Sigue!','The dragon is just spreading its wings. Keep going!'],
   c2:['飛得不錯！','飞得不错！','¡Buen vuelo!','Nice flight!'],
@@ -685,6 +698,177 @@ let paused = false;
 let themeIdx = 0;
 try{ const t = localStorage.getItem('dragonInk.theme'); const i = THEMES.findIndex(x=>x.id===t); if(i>=0) themeIdx = i; }catch(e){}
 
+/* =====================================================================
+   班級連結／練習連結／自訂主題（訂閱功能，老師管理中心產生連結）
+   ?class=班級碼    班級模式：成績回傳給老師（老師要訂閱中）
+   ?th=food-animal  練習連結：只開指定的內建主題（不記成績、不進公開排行榜）
+   ?d=範圍碼        練習範圍：內建主題＋老師自訂主題（存在老師管理中心資料庫）
+   RELEASE=false 時，以上連結一律顯示「維修中」；網址加 ?dev=1 可以先測試。
+   公開頁（沒有參數）：RELEASE 之後只開 食物、動物、顏色。
+   ===================================================================== */
+const RELEASE = false;
+const QSD = new URLSearchParams(location.search);
+const DEV = QSD.get('dev') === '1';
+const KNOWN = new Set(THEMES.map(t=>t.id));
+const CLASS_ID = String(QSD.get('class')||'').toLowerCase();
+const CLASS_MODE = /^[a-z0-9]{8,32}$/.test(CLASS_ID);
+const TH_IDS = String(QSD.get('th')||'').toLowerCase().split(/[-,_]/).filter(x=>KNOWN.has(x));
+const SET_P = String(QSD.get('d')||'').toLowerCase();
+const SET_MODE = /^[a-z0-9]{8,32}$/.test(SET_P);
+const SPECIAL = CLASS_MODE || TH_IDS.length > 0 || SET_MODE;
+const MAINT = !RELEASE && !DEV && SPECIAL;
+const PUBLIC_FREE = ['food','animal','color'];
+const CUSTOM_MAX = 3, CUSTOM_WORDS_MAX = 40;
+const CENTRAL_CONFIG = {
+  apiKey: "AIzaSyCHZz8Hh7m45bJfZC9aK_f_NvUD-aUeuzU",
+  authDomain: "subscription-48d3c.firebaseapp.com",
+  projectId: "subscription-48d3c",
+  storageBucket: "subscription-48d3c.firebasestorage.app",
+  messagingSenderId: "276281656991",
+  appId: "1:276281656991:web:de242ba22373816c3044aa"
+};
+let ALLOWED = null;                       // null＝內建主題全開
+if(!SPECIAL && (RELEASE || DEV)) ALLOWED = new Set(PUBLIC_FREE);
+if(TH_IDS.length) ALLOWED = new Set(TH_IDS);
+let classData = null, linkReady = !(CLASS_MODE || SET_MODE);
+const themeAllowed = t => !ALLOWED || ALLOWED.has(t.id);
+function ensureThemeIdx(){
+  if(!THEMES[themeIdx] || !themeAllowed(THEMES[themeIdx])){ const i = THEMES.findIndex(themeAllowed); themeIdx = i >= 0 ? i : 0; }
+}
+const pubBoard = () => LEADERBOARD.enabled && !SPECIAL;
+function showFatal(key){
+  const old = document.getElementById('fatal'); if(old) old.remove();
+  const [zh, sm] = pair(key);
+  const d = document.createElement('div'); d.id = 'fatal';
+  d.style.cssText = 'position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;padding:18px;background:#f2ece0';
+  d.innerHTML = '<div class="card"><div style="font-size:22px;letter-spacing:4px;line-height:1.6;font-family:var(--kai)">'+zh+'</div>'+(sm?'<div style="font-size:13px;color:var(--ink2);margin-top:8px">'+sm+'</div>':'')+'</div>';
+  document.body.appendChild(d);
+}
+function renderModeNote(){
+  const el = $('modeNote'); if(!el) return;
+  if(!SPECIAL || MAINT){ el.hidden = true; return; }
+  el.hidden = false; fill(el, CLASS_MODE ? 'noteClass' : 'notePractice');
+}
+let centralPromise = null;
+function getCentral(){
+  if(!centralPromise) centralPromise = (async ()=>{
+    if(!window.firebase) throw { code: 'unavailable' };
+    const app = firebase.initializeApp(CENTRAL_CONFIG, 'central');
+    const a = app.auth();
+    if(a.authStateReady) await a.authStateReady();
+    if(!a.currentUser) await a.signInAnonymously();
+    return app;
+  })();
+  return centralPromise;
+}
+async function nickHash(nick){
+  const norm = String(nick).normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ');
+  try{
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(norm));
+    return Array.from(new Uint8Array(buf)).slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('');
+  }catch(e){
+    let h1 = 0x811c9dc5, h2 = 0x01000193;
+    for(const ch of norm){ const c = ch.codePointAt(0); h1 = Math.imul(h1 ^ c, 16777619) >>> 0; h2 = Math.imul(h2 + c, 2246822519) >>> 0; }
+    return h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0');
+  }
+}
+async function fetchClass(){
+  const app = await getCentral();
+  const snap = await app.firestore().collection('classes').doc(CLASS_ID).get();
+  if(!snap.exists) throw { code: 'not-found' };
+  return snap.data();
+}
+async function fetchSet(){
+  const app = await getCentral();
+  const snap = await app.firestore().collection('shared_dragon').doc(SET_P).get();
+  if(!snap.exists) throw { code: 'not-found' };
+  return snap.data();
+}
+// 練習範圍：內建主題 id 清單＋老師自訂主題（每位老師最多 3 個、每個最多 40 詞，至少 6 詞）
+function applySet(d){
+  const allow = new Set((Array.isArray(d.builtin) ? d.builtin : []).filter(id => KNOWN.has(id)));
+  (Array.isArray(d.custom) ? d.custom : []).slice(0, CUSTOM_MAX).forEach(c=>{
+    if(!c || !/^[a-z0-9]{1,32}$/.test(String(c.id||'')) || KNOWN.has(c.id)) return;
+    const words = (Array.isArray(c.words) ? c.words : []).slice(0, CUSTOM_WORDS_MAX).map(w=>{
+      if(!Array.isArray(w) || typeof w[0] !== 'string' || !w[0].trim()) return null;
+      const t = w[0].trim().slice(0, 8);
+      return [t, String(w[1]||t).trim().slice(0, 8), String(w[2]||'').trim().slice(0, 60), String(w[3]||'').trim().slice(0, 60), String(w[4]||'').trim().slice(0, 60)];
+    }).filter(Boolean);
+    if(words.length < 6) return;
+    const nm = String(c.name||'').trim().slice(0, 12) || '自訂';
+    THEMES.push({ id: c.id, name: [nm, nm, nm, nm], words, custom: true });
+    allow.add(c.id);
+  });
+  if(!allow.size) throw { code: 'not-found' };
+  ALLOWED = allow;
+}
+async function submitClassScore(entry){
+  const app = await getCentral(), cdb = app.firestore();
+  const h = await nickHash(entry.name);
+  const ref = cdb.collection('class_scores').doc(CLASS_ID + '_dragon_' + entry.theme + '_' + h);
+  const ts = firebase.firestore.FieldValue.serverTimestamp();
+  const extra = { c: entry.correct, a: entry.altitude, wr: entry.wr };
+  const old = await ref.get();
+  if(!old.exists){
+    await ref.set({ cid: CLASS_ID, owner: classData.owner, game: 'dragon', k: entry.theme, h, nick: entry.name, best: entry.score, plays: 1, lastAt: ts, extra });
+  }else{
+    const o = old.data(), upd = { nick: entry.name, plays: (o.plays || 0) + 1, lastAt: ts, best: Math.max(o.best || 0, entry.score) };
+    if(entry.score > (o.best || 0)) upd.extra = extra;
+    await ref.update(upd);
+  }
+}
+async function fetchClassBoard(theme){
+  const app = await getCentral();
+  const snap = await app.firestore().collection('class_scores').where('cid', '==', CLASS_ID).limit(300).get();
+  return snap.docs.map(d => d.data()).filter(r => r.game === 'dragon' && r.k === theme).sort((a, b) => b.best - a.best).slice(0, 10);
+}
+async function classFinish(entry){
+  const box = $('lbBox');
+  const say = k => { const [z, m] = pair(k); return z + (m ? '　' + m : ''); };
+  box.innerHTML = '<div class="lbM" id="clsMsg"></div><div id="clsRows"></div>';
+  const msg = k => { const el = $('clsMsg'); if(el) el.textContent = say(k); };
+  msg('lbLoad');
+  try{
+    await submitClassScore(entry);
+    msg('sentOk');
+  }catch(e){
+    console.warn(e);
+    msg(e && e.code === 'permission-denied' ? 'sentExpired' : 'sentFail');
+    return;
+  }
+  if(!classData || classData.showBoard !== true) return;
+  try{
+    const rows = await fetchClassBoard(entry.theme);
+    const holder = $('clsRows'); if(!holder || !rows.length) return;
+    const [tz, ts] = pair('clsBoard');
+    const ol = document.createElement('ol');
+    rows.forEach((r, i) => {
+      const li = document.createElement('li'); if(r.nick === entry.name) li.className = 'me';
+      const n = document.createElement('span'); n.className = 'n'; n.textContent = i + 1;
+      const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = r.nick;
+      const sc = document.createElement('span'); sc.className = 'sc'; sc.textContent = r.best;
+      li.append(n, nm, sc); ol.appendChild(li);
+    });
+    holder.innerHTML = '<div class="lbT" style="margin-top:10px"><span class="zh">' + tz + '</span>' + (ts ? '<small>' + ts + '</small>' : '') + '</div>';
+    holder.appendChild(ol);
+  }catch(e){ console.warn(e); }
+}
+async function linkBoot(){
+  if(MAINT){ showFatal('maint'); return; }
+  ensureThemeIdx(); renderModeNote();
+  if(!linkReady){
+    $('themeGrid').textContent = pair('lbLoad')[0];
+    try{
+      const jobs = [];
+      if(CLASS_MODE) jobs.push(fetchClass().then(d => { classData = d; }));
+      if(SET_MODE) jobs.push(fetchSet().then(applySet));
+      await Promise.all(jobs);
+    }catch(e){ console.warn(e); showFatal(e && e.code === 'not-found' ? 'linkBad' : 'linkOff'); return; }
+    linkReady = true;
+  }
+  ensureThemeIdx(); buildThemeGrid(); renderThemeChip();
+}
+
 // 遊戲數值
 let score=0, hearts=3, combo=0, correct=0, wrongCount=0, level=0, scroll=0, speed=70, spawnAcc=0, time=0;
 const MAX_HEARTS = 3;
@@ -732,7 +916,8 @@ function refillBags(){
   if(!bagBad.length){
     const skip = NO_MIX[th.id] || [];
     const others = []; THEMES.forEach((t,i)=>{ if(i!==themeIdx && skip.indexOf(t.id)<0) others.push(...t.words); });
-    bagBad = shuffle(others);
+    const goodSet = new Set(th.words.map(w=>w[0]));
+    bagBad = shuffle(others.filter(w=>!goodSet.has(w[0])));
   }
   if(!bagSim.length){
     const sim = []; (SIMILAR[th.id]||[]).forEach(id=>{ if((NO_MIX[th.id]||[]).indexOf(id)>=0) return; const t = THEMES.find(x=>x.id===id); if(t) sim.push(...t.words); });
@@ -1192,11 +1377,13 @@ function endGame(){
     $('resRec').hidden = !rec; $('resRec').innerHTML = rec ? pair('newRec')[0] : '';
     const ck = correct<=0?'c0':correct<10?'c1':correct<25?'c2':correct<50?'c3':'c4';
     fill($('resCmt'), ck);
-    $('lbBox').hidden = !LEADERBOARD.enabled;
+    $('lbBox').hidden = !(pubBoard() || CLASS_MODE);
     renderReview();
   }, 600);
-  const entry = { name: ($('nameInp').value||'').trim() || '玩家', theme: curTheme().id, score, correct, altitude: alt, ts: Date.now() };
-  if(LEADERBOARD.enabled){
+  const wr = [...wrongMap.keys(), ...[...missMap.keys()].filter(w=>!wrongMap.has(w))].slice(0,5).map(w=>w[0]);
+  const entry = { name: ($('nameInp').value||'').trim() || '玩家', theme: curTheme().id, score, correct, altitude: alt, ts: Date.now(), wr };
+  if(CLASS_MODE && classData){ classFinish(entry); }
+  else if(pubBoard()){
     const th = entry.theme;
     (async () => {
       try{ if(score>0) await LEADERBOARD.submit(entry); }catch(e){ console.warn(e); }
@@ -1615,8 +1802,10 @@ function showToast(key){
   clearTimeout(toastTimer); toastTimer = setTimeout(()=>$('toast').classList.remove('on'), 1100);
 }
 function buildThemeGrid(){
+  if(!linkReady || MAINT) return;
   const g = $('themeGrid'); g.innerHTML = '';
   THEMES.forEach((t,i)=>{
+    if(!themeAllowed(t)) return;
     const b = document.createElement('button');
     b.className = 'opt' + (i===themeIdx ? ' on' : '');
     const zh = S.script === 'simp' ? t.name[1] : t.name[0];
@@ -1640,7 +1829,7 @@ function applyLang(){
   const t = $('menu').querySelector('h1');
   const [tz, ts] = pair('title');
   t.innerHTML = tz + (ts ? '<small>'+ts+'</small>' : '');
-  buildThemeGrid(); renderThemeChip(); renderHud();
+  buildThemeGrid(); renderThemeChip(); renderHud(); renderModeNote();
   items.forEach(measureItem);
   document.title = tz;
 }
@@ -1682,6 +1871,8 @@ document.querySelectorAll('#gMusic .opt').forEach(b=>b.addEventListener('click',
 $('menuGear').addEventListener('click', openSettings);
 $('dlgDone').addEventListener('click', closeSettings);
 $('startBtn').addEventListener('click', ()=>{
+  if(MAINT || !linkReady) return;
+  if(CLASS_MODE && !$('nameInp').value.trim()){ $('nameInp').classList.add('need'); $('nameInp').focus(); return; }
   try{ localStorage.setItem('dragonInk.name', $('nameInp').value.trim()); }catch(e){}
   startGame();
 });
@@ -1689,6 +1880,7 @@ $('againBtn').addEventListener('click', startGame);
 $('toMenuBtn').addEventListener('click', toMenu);
 try{ $('nameInp').value = localStorage.getItem('dragonInk.name') || ''; }catch(e){}
 $('nameInp').placeholder = '玩家';
+$('nameInp').addEventListener('input', ()=>$('nameInp').classList.remove('need'));
 document.addEventListener('visibilitychange', ()=>{ if(document.hidden && state === 'play') pauseGame(); });
 
 /* ---- 輸入：手指／滑鼠相對拖動、方向鍵 ---- */
@@ -1738,7 +1930,7 @@ function loop(t){
   rafId = requestAnimationFrame(loop);
 }
 window.addEventListener('resize', resize);
-resize(); initDragon(); applyLang(); syncSettingsUI();
+resize(); initDragon(); applyLang(); syncSettingsUI(); linkBoot();
 lastT = performance.now();
 rafId = requestAnimationFrame(loop);
 
@@ -1774,6 +1966,7 @@ window.__dragon = {
   get review(){ return { wrong:[...wrongMap.keys()].map(w=>w[0]), miss:[...missMap.keys()].map(w=>w[0]) }; },
   get state(){ return { state, paused, score, hearts, combo, correct, level, speed, W, H, items: items.map(i=>({text:i.text,good:i.good,x:i.x,y:i.y,r:i.r})), dragon:{x:dragon.x,y:dragon.y,ang:dragon.ang,tail:{x:dragon.pts[10].x,y:dragon.pts[10].y}} }; },
   setScore(n){ score = n; checkEggs(); },
+  endNow(){ if(state==='play') endGame(); },
   eggs(){ return { done:[...eggDone], goldT, petals:petals.length, roarT, cloudT, idiomN, lucky:items.filter(i=>i.lucky).length }; },
   moveTo(x,y){ dragon.tx = x; dragon.ty = y; clampTarget(); },
   settings: S,
