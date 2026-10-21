@@ -123,7 +123,7 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
       <div class="lbl" data-i18n="name"></div>
       <input class="namebox" id="nameInp" maxlength="12">
       <button class="btn" id="startBtn" data-i18n="start"></button>
-      <div class="ver" style="margin-top:14px">v1-8</div>
+      <div class="ver" style="margin-top:14px">v1-9</div>
     </div>
   </div>
 
@@ -366,10 +366,30 @@ const THEMES = [
     ['米飯','米饭','mǐfàn','arroz','rice'],['麵','面','miàn','fideos','noodles'],['包子','包子','bāozi','bao (pan al vapor)','steamed bun'],
     ['餃子','饺子','jiǎozi','dumplings','dumplings'],['蛋','蛋','dàn','huevo','egg'],['牛肉','牛肉','niúròu','carne de res','beef'],
     ['豆腐','豆腐','dòufu','tofu','tofu'],['麵包','面包','miànbāo','pan','bread'],['湯','汤','tāng','sopa','soup'],
-    ['魚','鱼','yú','pescado','fish'],['青菜','青菜','qīngcài','verduras','greens'],['蛋糕','蛋糕','dàngāo','pastel','cake'],
+    ['魚肉','鱼肉','yúròu','pescado (carne)','fish (meat)'],['青菜','青菜','qīngcài','verduras','greens'],['蛋糕','蛋糕','dàngāo','pastel','cake'],
     ['飯糰','饭团','fàntuán','bola de arroz','rice ball'],['小籠包','小笼包','xiǎolóngbāo','xiaolongbao','soup dumpling'],['滷肉飯','卤肉饭','lǔròufàn','arroz con carne guisada','braised pork rice'],
     ['炒飯','炒饭','chǎofàn','arroz frito','fried rice'],['雞肉','鸡肉','jīròu','pollo','chicken'],['豬肉','猪肉','zhūròu','cerdo','pork'],
-    ['牛奶','牛奶','niúnǎi','leche','milk'],['豆漿','豆浆','dòujiāng','leche de soya','soy milk'] ]},
+    ['牛奶','牛奶','niúnǎi','leche','milk'],['豆漿','豆浆','dòujiāng','leche de soya','soy milk'],['羊肉','羊肉','yángròu','cordero','lamb'],
+    ['排骨','排骨','páigǔ','costillas de cerdo','pork ribs'],['香腸','香肠','xiāngcháng','salchicha','sausage'],['火腿','火腿','huǒtuǐ','jamón','ham'],
+    ['培根','培根','péigēn','tocino','bacon'],['魚丸','鱼丸','yúwán','bolitas de pescado','fish ball'],['蛋餅','蛋饼','dànbǐng','tortilla de huevo','egg pancake'],
+    ['煎蛋','煎蛋','jiāndàn','huevo frito','fried egg'],['水煮蛋','水煮蛋','shuǐzhǔdàn','huevo cocido','boiled egg'],['饅頭','馒头','mántou','pan al vapor','steamed bread'],
+    ['稀飯','稀饭','xīfàn','congee','rice porridge'],['水餃','水饺','shuǐjiǎo','dumplings hervidos','boiled dumplings'],['鍋貼','锅贴','guōtiē','dumplings fritos','potstickers'],
+    ['餛飩','馄饨','húntun','wonton','wonton'],['春捲','春卷','chūnjuǎn','rollito primavera','spring roll'],['牛肉麵','牛肉面','niúròumiàn','sopa de fideos con res','beef noodle soup'],
+    ['拉麵','拉面','lāmiàn','ramen','ramen'],['義大利麵','意大利面','yìdàlìmiàn','espagueti','spaghetti'],['米粉','米粉','mǐfěn','fideos de arroz','rice noodles'],
+    ['披薩','披萨','pīsà','pizza','pizza'],['漢堡','汉堡','hànbǎo','hamburguesa','hamburger'],['三明治','三明治','sānmíngzhì','sándwich','sandwich'],
+    ['薯條','薯条','shǔtiáo','papas fritas','french fries'],['炸雞','炸鸡','zhájī','pollo frito','fried chicken'],['熱狗','热狗','règǒu','hot dog','hot dog'],
+    ['沙拉','沙拉','shālā','ensalada','salad'],['優格','酸奶','yōugé','yogur','yogurt'],['起司','奶酪','qǐsī','queso','cheese'],
+    ['奶油','奶油','nǎiyóu','mantequilla','butter'],['餅乾','饼干','bǐnggān','galletas','cookies'],['巧克力','巧克力','qiǎokèlì','chocolate','chocolate'],
+    ['糖果','糖果','tángguǒ','dulces','candy'],['冰淇淋','冰淇淋','bīngqílín','helado','ice cream'],['布丁','布丁','bùdīng','flan','pudding'],
+    ['麻糬','麻糬','máshǔ','mochi','mochi'],['珍珠奶茶','珍珠奶茶','zhēnzhūnǎichá','té de burbujas','bubble tea'],['咖啡','咖啡','kāfēi','café','coffee'],
+    ['茶','茶','chá','té','tea'],['果汁','果汁','guǒzhī','jugo','juice'],['可樂','可乐','kělè','refresco de cola','cola'],
+    ['啤酒','啤酒','píjiǔ','cerveza','beer'],['水','水','shuǐ','agua','water'],['鹽','盐','yán','sal','salt'],
+    ['糖','糖','táng','azúcar','sugar'],['醬油','酱油','jiàngyóu','salsa de soya','soy sauce'],['醋','醋','cù','vinagre','vinegar'],
+    ['油','油','yóu','aceite','oil'],['辣椒','辣椒','làjiāo','chile','chili pepper'],['蔥','葱','cōng','cebollín','green onion'],
+    ['薑','姜','jiāng','jengibre','ginger'],['蒜頭','蒜头','suàntóu','ajo','garlic'],['洋蔥','洋葱','yángcōng','cebolla','onion'],
+    ['馬鈴薯','马铃薯','mǎlíngshǔ','papa','potato'],['紅蘿蔔','红萝卜','hóngluóbo','zanahoria','carrot'],['高麗菜','高丽菜','gāolìcài','repollo','cabbage'],
+    ['青椒','青椒','qīngjiāo','pimiento','bell pepper'],['玉米','玉米','yùmǐ','maíz','corn'],['地瓜','地瓜','dìguā','camote','sweet potato'],
+    ['香菇','香菇','xiānggū','hongo shiitake','shiitake mushroom'],['花生','花生','huāshēng','cacahuate','peanut'] ]},
   { id:'fruit', name:['水果','水果','Frutas','Fruit'], words:[
     ['蘋果','苹果','píngguǒ','manzana','apple'],['香蕉','香蕉','xiāngjiāo','plátano','banana'],['西瓜','西瓜','xīguā','sandía','watermelon'],
     ['葡萄','葡萄','pútáo','uvas','grapes'],['芒果','芒果','mángguǒ','mango','mango'],['橘子','橘子','júzi','mandarina','tangerine'],
@@ -377,7 +397,16 @@ const THEMES = [
     ['梨子','梨子','lízi','pera','pear'],['桃子','桃子','táozi','durazno','peach'],['木瓜','木瓜','mùguā','papaya','papaya'],
     ['櫻桃','樱桃','yīngtáo','cereza','cherry'],['奇異果','奇异果','qíyìguǒ','kiwi','kiwi'],['蓮霧','莲雾','liánwù','manzana de agua','wax apple'],
     ['芭樂','芭乐','bālè','guayaba','guava'],['柚子','柚子','yòuzi','pomelo','pomelo'],['荔枝','荔枝','lìzhī','lichi','lychee'],
-    ['柿子','柿子','shìzi','caqui','persimmon'],['哈密瓜','哈密瓜','hāmìguā','melón','cantaloupe'] ]},
+    ['柿子','柿子','shìzi','caqui','persimmon'],['哈密瓜','哈密瓜','hāmìguā','melón','cantaloupe'],['藍莓','蓝莓','lánméi','arándano','blueberry'],
+    ['龍眼','龙眼','lóngyǎn','longan','longan'],['火龍果','火龙果','huǒlóngguǒ','pitahaya','dragon fruit'],['榴槤','榴莲','liúlián','durián','durian'],
+    ['椰子','椰子','yēzi','coco','coconut'],['石榴','石榴','shíliu','granada','pomegranate'],['李子','李子','lǐzi','ciruela','plum'],
+    ['杏子','杏子','xìngzi','albaricoque','apricot'],['無花果','无花果','wúhuāguǒ','higo','fig'],['小番茄','小番茄','xiǎofānqié','tomate cherry','cherry tomato'],
+    ['水蜜桃','水蜜桃','shuǐmìtáo','durazno jugoso','juicy peach'],['水梨','水梨','shuǐlí','pera asiática','Asian pear'],['香瓜','香瓜','xiāngguā','melón dulce','sweet melon'],
+    ['楊桃','杨桃','yángtáo','carambola','starfruit'],['釋迦','释迦','shìjiā','chirimoya','sugar apple'],['百香果','百香果','bǎixiāngguǒ','maracuyá','passion fruit'],
+    ['山竹','山竹','shānzhú','mangostán','mangosteen'],['萊姆','青柠','láimǔ','lima','lime'],['葡萄柚','葡萄柚','pútáoyòu','toronja','grapefruit'],
+    ['柳橙','柳橙','liǔchéng','naranja','orange'],['蔓越莓','蔓越莓','mànyuèméi','arándano rojo','cranberry'],['覆盆子','覆盆子','fùpénzǐ','frambuesa','raspberry'],
+    ['棗子','枣子','zǎozi','dátil rojo','jujube'],['枇杷','枇杷','pípá','níspero','loquat'],['酪梨','鳄梨','làolí','aguacate','avocado'],
+    ['葡萄乾','葡萄干','pútáogān','pasas','raisins'],['青蘋果','青苹果','qīngpíngguǒ','manzana verde','green apple'] ]},
   { id:'animal', name:['動物','动物','Animales','Animals'], words:[
     ['狗','狗','gǒu','perro','dog'],['貓','猫','māo','gato','cat'],['鳥','鸟','niǎo','pájaro','bird'],
     ['馬','马','mǎ','caballo','horse'],['牛','牛','niú','vaca','cow'],['豬','猪','zhū','cerdo','pig'],
@@ -385,7 +414,27 @@ const THEMES = [
     ['猴子','猴子','hóuzi','mono','monkey'],['大象','大象','dàxiàng','elefante','elephant'],['熊貓','熊猫','xióngmāo','panda','panda'],
     ['老鼠','老鼠','lǎoshǔ','ratón','mouse'],['雞','鸡','jī','gallina','chicken (animal)'],['蛇','蛇','shé','serpiente','snake'],
     ['烏龜','乌龟','wūguī','tortuga','turtle'],['青蛙','青蛙','qīngwā','rana','frog'],['蝴蝶','蝴蝶','húdié','mariposa','butterfly'],
-    ['獅子','狮子','shīzi','león','lion'],['龍','龙','lóng','dragón','dragon'] ]},
+    ['獅子','狮子','shīzi','león','lion'],['龍','龙','lóng','dragón','dragon'],['魚','鱼','yú','pez','fish'],
+    ['鴨子','鸭子','yāzi','pato','duck'],['鵝','鹅','é','ganso','goose'],['熊','熊','xióng','oso','bear'],
+    ['狼','狼','láng','lobo','wolf'],['狐狸','狐狸','húli','zorro','fox'],['鹿','鹿','lù','venado','deer'],
+    ['長頸鹿','长颈鹿','chángjǐnglù','jirafa','giraffe'],['斑馬','斑马','bānmǎ','cebra','zebra'],['駱駝','骆驼','luòtuo','camello','camel'],
+    ['河馬','河马','hémǎ','hipopótamo','hippo'],['犀牛','犀牛','xīniú','rinoceronte','rhino'],['袋鼠','袋鼠','dàishǔ','canguro','kangaroo'],
+    ['無尾熊','无尾熊','wúwěixióng','koala','koala'],['松鼠','松鼠','sōngshǔ','ardilla','squirrel'],['刺蝟','刺猬','cìwèi','erizo','hedgehog'],
+    ['蝙蝠','蝙蝠','biānfú','murciélago','bat'],['老鷹','老鹰','lǎoyīng','águila','eagle'],['貓頭鷹','猫头鹰','māotóuyīng','búho','owl'],
+    ['烏鴉','乌鸦','wūyā','cuervo','crow'],['麻雀','麻雀','máquè','gorrión','sparrow'],['鴿子','鸽子','gēzi','paloma','pigeon'],
+    ['鸚鵡','鹦鹉','yīngwǔ','loro','parrot'],['孔雀','孔雀','kǒngquè','pavo real','peacock'],['企鵝','企鹅','qǐ\'é','pingüino','penguin'],
+    ['鯨魚','鲸鱼','jīngyú','ballena','whale'],['海豚','海豚','hǎitún','delfín','dolphin'],['鯊魚','鲨鱼','shāyú','tiburón','shark'],
+    ['章魚','章鱼','zhāngyú','pulpo','octopus'],['螃蟹','螃蟹','pángxiè','cangrejo','crab'],['蝦子','虾子','xiāzi','camarón','shrimp'],
+    ['海星','海星','hǎixīng','estrella de mar','starfish'],['水母','水母','shuǐmǔ','medusa','jellyfish'],['鱷魚','鳄鱼','èyú','cocodrilo','crocodile'],
+    ['蜥蜴','蜥蜴','xīyì','lagartija','lizard'],['蜜蜂','蜜蜂','mìfēng','abeja','bee'],['螞蟻','蚂蚁','mǎyǐ','hormiga','ant'],
+    ['蜘蛛','蜘蛛','zhīzhū','araña','spider'],['蚊子','蚊子','wénzi','mosquito','mosquito'],['蒼蠅','苍蝇','cāngying','mosca','fly'],
+    ['蟑螂','蟑螂','zhāngláng','cucaracha','cockroach'],['蜻蜓','蜻蜓','qīngtíng','libélula','dragonfly'],['蝸牛','蜗牛','wōniú','caracol','snail'],
+    ['毛毛蟲','毛毛虫','máomáochóng','oruga','caterpillar'],['螢火蟲','萤火虫','yínghuǒchóng','luciérnaga','firefly'],['小狗','小狗','xiǎogǒu','cachorro','puppy'],
+    ['公雞','公鸡','gōngjī','gallo','rooster'],['小雞','小鸡','xiǎojī','pollito','chick'],['山羊','山羊','shānyáng','cabra','goat'],
+    ['驢子','驴子','lǘzi','burro','donkey'],['豹','豹','bào','leopardo','leopard'],['北極熊','北极熊','běijíxióng','oso polar','polar bear'],
+    ['海豹','海豹','hǎibào','foca','seal'],['鯉魚','鲤鱼','lǐyú','carpa','carp'],['金魚','金鱼','jīnyú','pez dorado','goldfish'],
+    ['鳳凰','凤凰','fènghuáng','fénix','phoenix'],['恐龍','恐龙','kǒnglóng','dinosaurio','dinosaur'],['天鵝','天鹅','tiān\'é','cisne','swan'],
+    ['海鷗','海鸥','hǎi\'ōu','gaviota','seagull'],['火雞','火鸡','huǒjī','pavo','turkey'] ]},
   { id:'color', name:['顏色','颜色','Colores','Colors'], words:[
     ['紅色','红色','hóngsè','rojo','red'],['藍色','蓝色','lánsè','azul','blue'],['綠色','绿色','lǜsè','verde','green'],
     ['黃色','黄色','huángsè','amarillo','yellow'],['白色','白色','báisè','blanco','white'],['黑色','黑色','hēisè','negro','black'],
@@ -393,15 +442,38 @@ const THEMES = [
     ['灰色','灰色','huīsè','gris','gray'],['咖啡色','咖啡色','kāfēisè','café','brown'],['金色','金色','jīnsè','dorado','gold'],
     ['深藍色','深蓝色','shēnlánsè','azul oscuro','dark blue'],['淺藍色','浅蓝色','qiǎnlánsè','celeste','light blue'],['米色','米色','mǐsè','beige','beige'],
     ['銀色','银色','yínsè','plateado','silver'],['透明','透明','tòumíng','transparente','transparent'],['彩色','彩色','cǎisè','de colores','colorful'],
-    ['橙色','橙色','chéngsè','anaranjado','orange (deep)'],['深綠色','深绿色','shēnlǜsè','verde oscuro','dark green'] ]},
+    ['橙色','橙色','chéngsè','anaranjado','orange (deep)'],['深綠色','深绿色','shēnlǜsè','verde oscuro','dark green'],['天藍色','天蓝色','tiānlánsè','azul cielo','sky blue'],
+    ['草綠色','草绿色','cǎolǜsè','verde pasto','grass green'],['橄欖綠','橄榄绿','gǎnlǎnlǜ','verde oliva','olive green'],['酒紅色','酒红色','jiǔhóngsè','vino tinto','burgundy'],
+    ['桃紅色','桃红色','táohóngsè','fucsia','hot pink'],['淺綠色','浅绿色','qiǎnlǜsè','verde claro','light green'],['淺黃色','浅黄色','qiǎnhuángsè','amarillo claro','light yellow'],
+    ['深紅色','深红色','shēnhóngsè','rojo oscuro','dark red'],['深灰色','深灰色','shēnhuīsè','gris oscuro','dark gray'],['卡其色','卡其色','kǎqísè','caqui','khaki'],
+    ['奶油色','奶油色','nǎiyóusè','color crema','cream'],['米白色','米白色','mǐbáisè','blanco hueso','off-white'],['土黃色','土黄色','tǔhuángsè','ocre','ochre'],
+    ['青色','青色','qīngsè','cian','cyan'],['膚色','肤色','fūsè','color piel','skin tone'],['金黃色','金黄色','jīnhuángsè','amarillo dorado','golden yellow'],
+    ['深紫色','深紫色','shēnzǐsè','morado oscuro','dark purple'],['淺紫色','浅紫色','qiǎnzǐsè','lila','lilac'],['橘紅色','橘红色','júhóngsè','rojo anaranjado','orange-red'],
+    ['黑白','黑白','hēibái','blanco y negro','black and white'],['淺粉紅色','浅粉红色','qiǎnfěnhóngsè','rosa claro','light pink'],['淺灰色','浅灰色','qiǎnhuīsè','gris claro','light gray'],
+    ['深咖啡色','深咖啡色','shēnkāfēisè','café oscuro','dark brown'],['淺咖啡色','浅咖啡色','qiǎnkāfēisè','café claro','light brown'] ]},
   { id:'transport', name:['交通','交通','Transporte','Transport'], words:[
     ['公車','公车','gōngchē','autobús','bus'],['捷運','捷运','jiéyùn','metro','MRT'],['火車','火车','huǒchē','tren','train'],
     ['飛機','飞机','fēijī','avión','airplane'],['計程車','计程车','jìchéngchē','taxi','taxi'],['腳踏車','脚踏车','jiǎotàchē','bicicleta','bicycle'],
     ['機車','机车','jīchē','moto','scooter'],['汽車','汽车','qìchē','carro','car'],['船','船','chuán','barco','boat'],
-    ['高鐵','高铁','gāotiě','tren bala','high-speed rail'],['卡車','卡车','kǎchē','camión','truck'],
-    ['救護車','救护车','jiùhùchē','ambulancia','ambulance'],['消防車','消防车','xiāofángchē','camión de bomberos','fire truck'],['警車','警车','jǐngchē','patrulla','police car'],
-    ['直升機','直升机','zhíshēngjī','helicóptero','helicopter'],['紅綠燈','红绿灯','hónglǜdēng','semáforo','traffic light'],['斑馬線','斑马线','bānmǎxiàn','paso de peatones','crosswalk'],
-    ['機場','机场','jīchǎng','aeropuerto','airport'],['車站','车站','chēzhàn','estación','station'],['馬路','马路','mǎlù','calle','road'] ]},
+    ['高鐵','高铁','gāotiě','tren bala','high-speed rail'],['卡車','卡车','kǎchē','camión','truck'],['救護車','救护车','jiùhùchē','ambulancia','ambulance'],
+    ['消防車','消防车','xiāofángchē','camión de bomberos','fire truck'],['警車','警车','jǐngchē','patrulla','police car'],['直升機','直升机','zhíshēngjī','helicóptero','helicopter'],
+    ['紅綠燈','红绿灯','hónglǜdēng','semáforo','traffic light'],['斑馬線','斑马线','bānmǎxiàn','paso de peatones','crosswalk'],['機場','机场','jīchǎng','aeropuerto','airport'],
+    ['車站','车站','chēzhàn','estación','station'],['馬路','马路','mǎlù','calle','road'],['公車站','公车站','gōngchēzhàn','parada de autobús','bus stop'],
+    ['捷運站','捷运站','jiéyùnzhàn','estación de metro','MRT station'],['火車站','火车站','huǒchēzhàn','estación de tren','train station'],['摩托車','摩托车','mótuōchē','motocicleta','motorcycle'],
+    ['電動車','电动车','diàndòngchē','vehículo eléctrico','electric vehicle'],['貨車','货车','huòchē','camioneta de carga','delivery truck'],['遊覽車','游览车','yóulǎnchē','autobús turístico','tour bus'],
+    ['纜車','缆车','lǎnchē','teleférico','cable car'],['渡輪','渡轮','dùlún','ferry','ferry'],['火箭','火箭','huǒjiàn','cohete','rocket'],
+    ['熱氣球','热气球','rèqìqiú','globo aerostático','hot air balloon'],['滑板車','滑板车','huábǎnchē','scooter de patada','kick scooter'],['輪胎','轮胎','lúntāi','llanta','tire'],
+    ['方向盤','方向盘','fāngxiàngpán','volante','steering wheel'],['安全帶','安全带','ānquándài','cinturón de seguridad','seat belt'],['安全帽','安全帽','ānquánmào','casco','helmet'],
+    ['車票','车票','chēpiào','boleto','ticket'],['悠遊卡','悠游卡','yōuyóukǎ','tarjeta EasyCard','EasyCard'],['加油站','加油站','jiāyóuzhàn','gasolinera','gas station'],
+    ['停車場','停车场','tíngchēchǎng','estacionamiento','parking lot'],['路口','路口','lùkǒu','cruce','intersection'],['橋','桥','qiáo','puente','bridge'],
+    ['隧道','隧道','suìdào','túnel','tunnel'],['高速公路','高速公路','gāosùgōnglù','autopista','highway'],['人行道','人行道','rénxíngdào','acera','sidewalk'],
+    ['地圖','地图','dìtú','mapa','map'],['港口','港口','gǎngkǒu','puerto','port'],['碼頭','码头','mǎtóu','muelle','pier'],
+    ['行李','行李','xíngli','equipaje','luggage'],['護照','护照','hùzhào','pasaporte','passport'],['路標','路标','lùbiāo','señal de tránsito','road sign'],
+    ['地鐵','地铁','dìtiě','metro','subway'],['單車','单车','dānchē','bicicleta','bike'],['月台','月台','yuètái','andén','platform'],
+    ['售票機','售票机','shòupiàojī','máquina de boletos','ticket machine'],['候車室','候车室','hòuchēshì','sala de espera','waiting room'],['航廈','航厦','hángxià','terminal','terminal'],
+    ['登機門','登机门','dēngjīmén','puerta de embarque','boarding gate'],['飛機票','飞机票','fēijīpiào','boleto de avión','plane ticket'],['行人','行人','xíngrén','peatón','pedestrian'],
+    ['車道','车道','chēdào','carril','traffic lane'],['十字路口','十字路口','shízìlùkǒu','crucero','crossroads'],['單行道','单行道','dānxíngdào','calle de un sentido','one-way street'],
+    ['轉彎','转弯','zhuǎnwān','dar vuelta','to turn'],['塞車','塞车','sāichē','tráfico','traffic jam'] ]},
   { id:'body', name:['身體','身体','Cuerpo','Body'], words:[
     ['頭','头','tóu','cabeza','head'],['手','手','shǒu','mano','hand'],['腳','脚','jiǎo','pie','foot'],
     ['眼睛','眼睛','yǎnjing','ojos','eyes'],['耳朵','耳朵','ěrduo','oreja','ear'],['鼻子','鼻子','bízi','nariz','nose'],
@@ -409,7 +481,21 @@ const THEMES = [
     ['頭髮','头发','tóufa','cabello','hair'],['肩膀','肩膀','jiānbǎng','hombro','shoulder'],['膝蓋','膝盖','xīgài','rodilla','knee'],
     ['臉','脸','liǎn','cara','face'],['脖子','脖子','bózi','cuello','neck'],['背','背','bèi','espalda','back'],
     ['手指','手指','shǒuzhǐ','dedo','finger'],['腿','腿','tuǐ','pierna','leg'],['手臂','手臂','shǒubì','brazo','arm'],
-    ['腰','腰','yāo','cintura','waist'],['嘴唇','嘴唇','zuǐchún','labios','lips'] ]},
+    ['腰','腰','yāo','cintura','waist'],['嘴唇','嘴唇','zuǐchún','labios','lips'],['手腕','手腕','shǒuwàn','muñeca','wrist'],
+    ['腳踝','脚踝','jiǎohuái','tobillo','ankle'],['腳趾','脚趾','jiǎozhǐ','dedo del pie','toe'],['大拇指','大拇指','dàmǔzhǐ','pulgar','thumb'],
+    ['指甲','指甲','zhǐjia','uña','nail'],['手掌','手掌','shǒuzhǎng','palma','palm'],['拳頭','拳头','quántou','puño','fist'],
+    ['手肘','手肘','shǒuzhǒu','codo','elbow'],['胸部','胸部','xiōngbù','pecho','chest'],['額頭','额头','étóu','frente','forehead'],
+    ['眉毛','眉毛','méimao','ceja','eyebrow'],['睫毛','睫毛','jiémáo','pestaña','eyelash'],['臉頰','脸颊','liǎnjiá','mejilla','cheek'],
+    ['下巴','下巴','xiàba','barbilla','chin'],['舌頭','舌头','shétou','lengua','tongue'],['喉嚨','喉咙','hóulóng','garganta','throat'],
+    ['鬍子','胡子','húzi','barba','beard'],['皮膚','皮肤','pífū','piel','skin'],['骨頭','骨头','gǔtou','hueso','bone'],
+    ['肌肉','肌肉','jīròu','músculo','muscle'],['血','血','xiě','sangre','blood'],['心臟','心脏','xīnzàng','corazón','heart'],
+    ['肺','肺','fèi','pulmón','lung'],['胃','胃','wèi','estómago','stomach'],['大腦','大脑','dànǎo','cerebro','brain'],
+    ['汗','汗','hàn','sudor','sweat'],['眼淚','眼泪','yǎnlèi','lágrimas','tears'],['大腿','大腿','dàtuǐ','muslo','thigh'],
+    ['小腿','小腿','xiǎotuǐ','pantorrilla','calf'],['腳底','脚底','jiǎodǐ','planta del pie','sole of the foot'],['手心','手心','shǒuxīn','palma de la mano','palm of the hand'],
+    ['關節','关节','guānjié','articulación','joint'],['肚臍','肚脐','dùqí','ombligo','belly button'],['腳後跟','脚后跟','jiǎohòugēn','talón','heel'],
+    ['中指','中指','zhōngzhǐ','dedo medio','middle finger'],['食指','食指','shízhǐ','dedo índice','index finger'],['小指','小指','xiǎozhǐ','dedo meñique','pinky finger'],
+    ['頭頂','头顶','tóudǐng','coronilla','top of the head'],['耳垂','耳垂','ěrchuí','lóbulo de la oreja','earlobe'],['眼皮','眼皮','yǎnpí','párpado','eyelid'],
+    ['鼻孔','鼻孔','bíkǒng','fosa nasal','nostril'] ]},
   { id:'clothes', name:['衣服','衣服','Ropa','Clothes'], words:[
     ['襯衫','衬衫','chènshān','camisa','shirt'],['褲子','裤子','kùzi','pantalones','pants'],['裙子','裙子','qúnzi','falda','skirt'],
     ['外套','外套','wàitào','chaqueta','jacket'],['帽子','帽子','màozi','gorro','hat'],['鞋子','鞋子','xiézi','zapatos','shoes'],
@@ -417,7 +503,22 @@ const THEMES = [
     ['皮包','皮包','píbāo','bolso','handbag'],['圍巾','围巾','wéijīn','bufanda','scarf'],['手套','手套','shǒutào','guantes','gloves'],
     ['領帶','领带','lǐngdài','corbata','tie'],['洋裝','洋装','yángzhuāng','vestido','dress'],['牛仔褲','牛仔裤','niúzǎikù','jeans','jeans'],
     ['雨衣','雨衣','yǔyī','impermeable','raincoat'],['拖鞋','拖鞋','tuōxié','chancletas','slippers'],['項鍊','项链','xiàngliàn','collar','necklace'],
-    ['口罩','口罩','kǒuzhào','mascarilla','face mask'],['運動鞋','运动鞋','yùndòngxié','tenis','sneakers'] ]},
+    ['口罩','口罩','kǒuzhào','mascarilla','face mask'],['運動鞋','运动鞋','yùndòngxié','tenis','sneakers'],['短袖','短袖','duǎnxiù','manga corta','short sleeve'],
+    ['長袖','长袖','chángxiù','manga larga','long sleeve'],['短褲','短裤','duǎnkù','shorts','shorts'],['長褲','长裤','chángkù','pantalón largo','long pants'],
+    ['內衣','内衣','nèiyī','ropa interior','underwear'],['睡衣','睡衣','shuìyī','pijama','pajamas'],['毛衣','毛衣','máoyī','suéter','sweater'],
+    ['大衣','大衣','dàyī','abrigo','overcoat'],['羽絨衣','羽绒衣','yǔróngyī','chamarra de plumas','down jacket'],['西裝','西装','xīzhuāng','traje','suit'],
+    ['制服','制服','zhìfú','uniforme','uniform'],['旗袍','旗袍','qípáo','qipao','qipao'],['泳衣','泳衣','yǒngyī','traje de baño','swimsuit'],
+    ['運動服','运动服','yùndòngfú','ropa deportiva','sportswear'],['背心','背心','bèixīn','chaleco','vest'],['皮鞋','皮鞋','píxié','zapatos de cuero','leather shoes'],
+    ['高跟鞋','高跟鞋','gāogēnxié','tacones','high heels'],['涼鞋','凉鞋','liángxié','sandalias','sandals'],['靴子','靴子','xuēzi','botas','boots'],
+    ['鞋帶','鞋带','xiédài','agujeta','shoelace'],['腰帶','腰带','yāodài','cinturón','belt'],['口袋','口袋','kǒudài','bolsillo','pocket'],
+    ['拉鍊','拉链','lāliàn','cierre','zipper'],['鈕扣','纽扣','niǔkòu','botón','button'],['領子','领子','lǐngzi','cuello de camisa','collar'],
+    ['袖子','袖子','xiùzi','manga','sleeve'],['墨鏡','墨镜','mòjìng','lentes de sol','sunglasses'],['耳環','耳环','ěrhuán','aretes','earrings'],
+    ['戒指','戒指','jièzhi','anillo','ring'],['手環','手环','shǒuhuán','pulsera','bracelet'],['手帕','手帕','shǒupà','pañuelo','handkerchief'],
+    ['背包','背包','bèibāo','mochila','backpack'],['錢包','钱包','qiánbāo','cartera','wallet'],['雨傘','雨伞','yǔsǎn','paraguas','umbrella'],
+    ['圍裙','围裙','wéiqún','delantal','apron'],['連帽衣','连帽衣','liánmàoyī','sudadera con gorro','hoodie'],['棒球帽','棒球帽','bàngqiúmào','gorra','baseball cap'],
+    ['長裙','长裙','chángqún','falda larga','long skirt'],['短裙','短裙','duǎnqún','falda corta','short skirt'],['絲巾','丝巾','sījīn','pañuelo de seda','silk scarf'],
+    ['髮圈','发圈','fàquān','liga para el cabello','hair tie'],['髮夾','发夹','fàjiā','pasador','hair clip'],['浴袍','浴袍','yùpáo','bata de baño','bathrobe'],
+    ['風衣','风衣','fēngyī','gabardina','trench coat'],['西裝外套','西装外套','xīzhuāngwàitào','saco','blazer'] ]},
   { id:'job', name:['職業','职业','Profesiones','Jobs'], words:[
     ['老師','老师','lǎoshī','profesor','teacher'],['醫生','医生','yīshēng','médico','doctor'],['護理師','护理师','hùlǐshī','enfermero','nurse'],
     ['警察','警察','jǐngchá','policía','police officer'],['廚師','厨师','chúshī','cocinero','chef'],['司機','司机','sījī','chofer','driver'],
@@ -425,7 +526,20 @@ const THEMES = [
     ['老闆','老板','lǎobǎn','jefe','boss'],['作家','作家','zuòjiā','escritor','writer'],['畫家','画家','huàjiā','pintor','painter'],
     ['歌手','歌手','gēshǒu','cantante','singer'],['演員','演员','yǎnyuán','actor','actor'],['記者','记者','jìzhě','periodista','reporter'],
     ['店員','店员','diànyuán','dependiente','shop clerk'],['消防員','消防员','xiāofángyuán','bombero','firefighter'],['理髮師','理发师','lǐfàshī','peluquero','hairdresser'],
-    ['飛行員','飞行员','fēixíngyuán','piloto','pilot'],['會計','会计','kuàijì','contador','accountant'] ]},
+    ['飛行員','飞行员','fēixíngyuán','piloto','pilot'],['會計','会计','kuàijì','contador','accountant'],['牙醫','牙医','yáyī','dentista','dentist'],
+    ['藥師','药师','yàoshī','farmacéutico','pharmacist'],['獸醫','兽医','shòuyī','veterinario','veterinarian'],['科學家','科学家','kēxuéjiā','científico','scientist'],
+    ['軍人','军人','jūnrén','militar','soldier'],['郵差','邮差','yóuchāi','cartero','mail carrier'],['外送員','外送员','wàisòngyuán','repartidor','delivery rider'],
+    ['清潔工','清洁工','qīngjiégōng','personal de limpieza','cleaner'],['保全','保安','bǎoquán','guardia de seguridad','security guard'],['水電工','水电工','shuǐdiàngōng','plomero y electricista','plumber and electrician'],
+    ['工人','工人','gōngrén','obrero','worker'],['建築師','建筑师','jiànzhúshī','arquitecto','architect'],['設計師','设计师','shèjìshī','diseñador','designer'],
+    ['攝影師','摄影师','shèyǐngshī','fotógrafo','photographer'],['導遊','导游','dǎoyóu','guía turístico','tour guide'],['空服員','空乘员','kōngfúyuán','auxiliar de vuelo','flight attendant'],
+    ['服務生','服务生','fúwùshēng','mesero','waiter'],['收銀員','收银员','shōuyínyuán','cajero','cashier'],['銀行員','银行员','yínhángyuán','empleado de banco','bank clerk'],
+    ['業務員','业务员','yèwùyuán','vendedor','salesperson'],['秘書','秘书','mìshū','secretaria','secretary'],['經理','经理','jīnglǐ','gerente','manager'],
+    ['運動員','运动员','yùndòngyuán','deportista','athlete'],['教練','教练','jiàoliàn','entrenador','coach'],['音樂家','音乐家','yīnyuèjiā','músico','musician'],
+    ['導演','导演','dǎoyǎn','director de cine','film director'],['翻譯','翻译','fānyì','traductor','translator'],['麵包師傅','面包师傅','miànbāoshīfu','panadero','baker'],
+    ['漁夫','渔夫','yúfū','pescador','fisherman'],['法官','法官','fǎguān','juez','judge'],['市長','市长','shìzhǎng','alcalde','mayor'],
+    ['總統','总统','zǒngtǒng','presidente','president'],['保母','保姆','bǎomǔ','niñera','nanny'],['看護','护工','kānhù','cuidador','caregiver'],
+    ['校長','校长','xiàozhǎng','director de escuela','principal'],['醫師','医师','yīshī','doctor','physician'],['作曲家','作曲家','zuòqǔjiā','compositor','composer'],
+    ['主持人','主持人','zhǔchírén','presentador','host'],['裁縫師','裁缝师','cáiféngshī','sastre','tailor'],['修車師傅','修车师傅','xiūchēshīfu','mecánico','mechanic'] ]},
   { id:'weather', name:['天氣','天气','Clima','Weather'], words:[
     ['晴天','晴天','qíngtiān','día soleado','sunny day'],['陰天','阴天','yīntiān','día nublado','cloudy day'],['下雨','下雨','xiàyǔ','llover','to rain'],
     ['下雪','下雪','xiàxuě','nevar','to snow'],['颱風','台风','táifēng','tifón','typhoon'],['打雷','打雷','dǎléi','truenos','thunder'],
@@ -433,7 +547,19 @@ const THEMES = [
     ['月亮','月亮','yuèliàng','luna','moon'],['星星','星星','xīngxing','estrellas','stars'],['雲','云','yún','nube','cloud'],
     ['風','风','fēng','viento','wind'],['霧','雾','wù','niebla','fog'],['熱','热','rè','calor','hot'],
     ['冷','冷','lěng','frío','cold'],['涼快','凉快','liángkuai','fresco','cool'],['溫暖','温暖','wēnnuǎn','templado','warm'],
-    ['潮濕','潮湿','cháoshī','húmedo','humid'],['地震','地震','dìzhèn','terremoto','earthquake'] ]},
+    ['潮濕','潮湿','cháoshī','húmedo','humid'],['地震','地震','dìzhèn','terremoto','earthquake'],['大雨','大雨','dàyǔ','lluvia fuerte','heavy rain'],
+    ['小雨','小雨','xiǎoyǔ','llovizna','light rain'],['雷雨','雷雨','léiyǔ','tormenta','thunderstorm'],['大風','大风','dàfēng','viento fuerte','strong wind'],
+    ['微風','微风','wēifēng','brisa','breeze'],['乾燥','干燥','gānzào','seco','dry'],['悶熱','闷热','mēnrè','bochornoso','muggy'],
+    ['寒冷','寒冷','hánlěng','helado','freezing'],['冰雹','冰雹','bīngbáo','granizo','hail'],['霜','霜','shuāng','escarcha','frost'],
+    ['冰','冰','bīng','hielo','ice'],['雪','雪','xuě','nieve','snow'],['雨','雨','yǔ','lluvia','rain'],
+    ['天空','天空','tiānkōng','cielo','sky'],['烏雲','乌云','wūyún','nubes oscuras','dark clouds'],['陽光','阳光','yángguāng','luz del sol','sunshine'],
+    ['氣溫','气温','qìwēn','temperatura','air temperature'],['天氣預報','天气预报','tiānqìyùbào','pronóstico del clima','weather forecast'],['季節','季节','jìjié','estación del año','season'],
+    ['春天','春天','chūntiān','primavera','spring'],['夏天','夏天','xiàtiān','verano','summer'],['秋天','秋天','qiūtiān','otoño','autumn'],
+    ['冬天','冬天','dōngtiān','invierno','winter'],['梅雨','梅雨','méiyǔ','lluvias de ciruela','plum rain'],['寒流','寒流','hánliú','ola de frío','cold wave'],
+    ['洪水','洪水','hóngshuǐ','inundación','flood'],['日出','日出','rìchū','amanecer','sunrise'],['日落','日落','rìluò','atardecer','sunset'],
+    ['暴風雨','暴风雨','bàofēngyǔ','tormenta fuerte','storm'],['晴朗','晴朗','qínglǎng','despejado','clear'],['多雲','多云','duōyún','nublado parcial','partly cloudy'],
+    ['陣雨','阵雨','zhènyǔ','chubasco','shower'],['毛毛雨','毛毛雨','máomáoyǔ','garúa','drizzle'],['暖和','暖和','nuǎnhuo','calientito','warm'],
+    ['炎熱','炎热','yánrè','calor intenso','scorching hot'] ]},
   { id:'home', name:['家裡','家里','En casa','At home'], words:[
     ['桌子','桌子','zhuōzi','mesa','table'],['椅子','椅子','yǐzi','silla','chair'],['沙發','沙发','shāfā','sofá','sofa'],
     ['床','床','chuáng','cama','bed'],['冰箱','冰箱','bīngxiāng','refrigerador','fridge'],['電視','电视','diànshì','televisión','TV'],
@@ -441,14 +567,35 @@ const THEMES = [
     ['門','门','mén','puerta','door'],['燈','灯','dēng','lámpara','lamp'],['書櫃','书柜','shūguì','librero','bookshelf'],
     ['洗衣機','洗衣机','xǐyījī','lavadora','washing machine'],['鏡子','镜子','jìngzi','espejo','mirror'],['枕頭','枕头','zhěntou','almohada','pillow'],
     ['棉被','棉被','miánbèi','cobija','blanket'],['浴室','浴室','yùshì','baño','bathroom'],['廚房','厨房','chúfáng','cocina','kitchen'],
-    ['陽台','阳台','yángtái','balcón','balcony'],['樓梯','楼梯','lóutī','escaleras','stairs'] ]},
+    ['陽台','阳台','yángtái','balcón','balcony'],['樓梯','楼梯','lóutī','escaleras','stairs'],['衣櫃','衣柜','yīguì','armario','wardrobe'],
+    ['鞋櫃','鞋柜','xiéguì','zapatero','shoe cabinet'],['書桌','书桌','shūzhuō','escritorio','desk'],['茶几','茶几','chájī','mesa de centro','coffee table'],
+    ['電腦','电脑','diànnǎo','computadora','computer'],['電話','电话','diànhuà','teléfono','telephone'],['手機','手机','shǒujī','celular','mobile phone'],
+    ['時鐘','时钟','shízhōng','reloj de pared','clock'],['掃把','扫把','sàobǎ','escoba','broom'],['拖把','拖把','tuōbǎ','trapeador','mop'],
+    ['垃圾桶','垃圾桶','lèsètǒng','bote de basura','trash can'],['水龍頭','水龙头','shuǐlóngtóu','grifo','faucet'],['馬桶','马桶','mǎtǒng','inodoro','toilet'],
+    ['浴缸','浴缸','yùgāng','tina de baño','bathtub'],['蓮蓬頭','莲蓬头','liánpengtóu','regadera','shower head'],['牙刷','牙刷','yáshuā','cepillo de dientes','toothbrush'],
+    ['牙膏','牙膏','yágāo','pasta de dientes','toothpaste'],['毛巾','毛巾','máojīn','toalla','towel'],['肥皂','肥皂','féizào','jabón','soap'],
+    ['洗髮精','洗发水','xǐfàjīng','shampoo','shampoo'],['衛生紙','卫生纸','wèishēngzhǐ','papel higiénico','toilet paper'],['梳子','梳子','shūzi','peine','comb'],
+    ['衣架','衣架','yījià','gancho','hanger'],['地毯','地毯','dìtǎn','alfombra','rug'],['窗簾','窗帘','chuānglián','cortina','curtain'],
+    ['地板','地板','dìbǎn','piso','floor'],['天花板','天花板','tiānhuābǎn','techo interior','ceiling'],['牆壁','墙壁','qiángbì','pared','wall'],
+    ['屋頂','屋顶','wūdǐng','techo','roof'],['客廳','客厅','kètīng','sala','living room'],['臥室','卧室','wòshì','recámara','bedroom'],
+    ['飯廳','饭厅','fàntīng','comedor','dining room'],['院子','院子','yuànzi','patio','yard'],['車庫','车库','chēkù','garaje','garage'],
+    ['鑰匙','钥匙','yàoshi','llave','key'],['插座','插座','chāzuò','enchufe','socket'],['開關','开关','kāiguān','interruptor','switch'],
+    ['遙控器','遥控器','yáokòngqì','control remoto','remote control'],['電鍋','电锅','diànguō','arrocera','rice cooker'],['微波爐','微波炉','wēibōlú','microondas','microwave'],
+    ['烤箱','烤箱','kǎoxiāng','horno','oven'],['瓦斯爐','煤气炉','wǎsīlú','estufa','gas stove'],['鍋子','锅子','guōzi','olla','pot'],
+    ['盤子','盘子','pánzi','plato','plate'],['碗','碗','wǎn','tazón','bowl'],['筷子','筷子','kuàizi','palillos','chopsticks'],
+    ['湯匙','汤匙','tāngchí','cuchara','spoon'],['叉子','叉子','chāzi','tenedor','fork'],['刀子','刀子','dāozi','cuchillo','knife'],
+    ['杯子','杯子','bēizi','vaso','cup'],['水壺','水壶','shuǐhú','jarra','kettle'],['抽屜','抽屉','chōutì','cajón','drawer'],
+    ['檯燈','台灯','táidēng','lámpara de escritorio','desk lamp'] ]},
 ];
 
 // 高等級時，干擾字會混入「相近主題」的字（比較容易搞混）
 const SIMILAR = {
-  food:['fruit','home'], fruit:['food','animal'], animal:['body','weather'], color:['clothes','fruit'], transport:['job','home'],
+  food:['home','body'], fruit:['color','home'], animal:['body','weather'], color:['clothes','fruit'], transport:['job','home'],
   body:['clothes','animal'], clothes:['body','color'], job:['transport','body'], weather:['color','animal'], home:['clothes','food'],
 };
+
+// 有重疊的主題，不會把對方的字當成「錯的字」（例如蘋果是水果也是吃的，玩食物時不會掉下來）
+const NO_MIX = { food:['fruit','animal'], fruit:['food'], animal:['food'] };
 
 /* 拼音（帶聲調符號）→ 注音（和 跑吧 同一份轉換器） */
 const ZY = (function(){
@@ -509,7 +656,7 @@ const ZY = (function(){
     if(cur) out.push(cur);
     return out;
   }
-  function convWord(py){ return split(py).map(one).join(' '); }
+  function convWord(py){ return String(py||'').split(/[\s'’]+/).filter(Boolean).map(function(p){ return split(p).map(one).join(' '); }).join(' '); }
   return { one: one, conv: conv, word: convWord };
 })();
 
@@ -583,11 +730,12 @@ function refillBags(){
   const th = curTheme();
   if(!bagGood.length) bagGood = shuffle(th.words.slice());
   if(!bagBad.length){
-    const others = []; THEMES.forEach((t,i)=>{ if(i!==themeIdx) others.push(...t.words); });
+    const skip = NO_MIX[th.id] || [];
+    const others = []; THEMES.forEach((t,i)=>{ if(i!==themeIdx && skip.indexOf(t.id)<0) others.push(...t.words); });
     bagBad = shuffle(others);
   }
   if(!bagSim.length){
-    const sim = []; (SIMILAR[th.id]||[]).forEach(id=>{ const t = THEMES.find(x=>x.id===id); if(t) sim.push(...t.words); });
+    const sim = []; (SIMILAR[th.id]||[]).forEach(id=>{ if((NO_MIX[th.id]||[]).indexOf(id)>=0) return; const t = THEMES.find(x=>x.id===id); if(t) sim.push(...t.words); });
     bagSim = shuffle(sim);
   }
 }
