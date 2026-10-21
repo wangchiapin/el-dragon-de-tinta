@@ -4,7 +4,7 @@
 
 - **網址：** https://wangchiapin.github.io/el-dragon-de-tinta/
 - **對象：** 學中文的西語學生（介面支援 中＋西／中＋英／只有中文）
-- **狀態：** v1-10（改版中）。新增班級連結、練習連結、老師自訂主題，**尚未開放**：`RELEASE=false` 時公開頁仍是 10 個主題；網址加 `?dev=1` 可預覽。
+- **狀態：** v1-10，已開放（2026-10-21）：公開頁只有食物、動物、顏色 3 個主題；老師連結（練習／班級／範圍）可開放更多。`RELEASE=false` 可暫時改回維修中；網址加 `?dev=1` 可預覽。
 
 ## 玩法
 
@@ -40,7 +40,7 @@
 
 遊戲自己另存的資料：`dragonInk.theme`（上次選的主題）、`dragonInk.name`（名字）、`dragonInk.music`（背景音樂開關）、`dragonInk.best.<主題>`（每個主題的本機最高分）。
 
-## 老師連結與班級模式（v1-10，尚未開放）
+## 老師連結與班級模式（v1-10）
 
 接到另一個 Firebase 專案 `subscription-48d3c`（老師管理中心那個）：
 
@@ -50,7 +50,7 @@
 | `?class=<班級碼>` | 班級連結：學生輸入名字，成績存到 `class_scores`（`game='dragon'`，`k`＝主題 id，`extra={c,a,wr}`） |
 | `?d=<範圍碼>` | 練習範圍：讀 `shared_dragon/<碼>`，可含老師自訂主題（最多 3 個，每個 6～40 詞） |
 
-`RELEASE` 開放後，公開頁面只留食物、動物、顏色 3 個主題；免費老師的連結可再加交通、家裡（共 5 個）；訂閱老師 10 個全開。測試用 `window.__dragon.endNow()`。規則見 profesor repo 的 `firestore-rules-dragon.txt`。
+`RELEASE=true` 時，公開頁面只留食物、動物、顏色 3 個主題；免費老師的連結可再加交通、家裡（共 5 個）；訂閱老師 10 個全開。測試用 `window.__dragon.endNow()`。規則見 profesor repo 的 `firestore-rules-dragon.txt`。
 
 ## 畫面風格
 

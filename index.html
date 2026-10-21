@@ -703,10 +703,10 @@ try{ const t = localStorage.getItem('dragonInk.theme'); const i = THEMES.findInd
    ?class=班級碼    班級模式：成績回傳給老師（老師要訂閱中）
    ?th=food-animal  練習連結：只開指定的內建主題（不記成績、不進公開排行榜）
    ?d=範圍碼        練習範圍：內建主題＋老師自訂主題（存在老師管理中心資料庫）
-   RELEASE=false 時，以上連結一律顯示「維修中」；網址加 ?dev=1 可以先測試。
+   RELEASE=false 時，以上連結一律顯示「維修中」；網址加 ?dev=1 可以先測試。（目前已開放：RELEASE=true）
    公開頁（沒有參數）：RELEASE 之後只開 食物、動物、顏色。
    ===================================================================== */
-const RELEASE = false;
+const RELEASE = true;
 const QSD = new URLSearchParams(location.search);
 const DEV = QSD.get('dev') === '1';
 const KNOWN = new Set(THEMES.map(t=>t.id));
