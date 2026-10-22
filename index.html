@@ -55,6 +55,9 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
 .lbl small{display:block;font-size:11px;color:var(--ink2)}
 .btn{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;max-width:300px;height:54px;margin:12px auto 0;border-radius:999px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);font:inherit;font-size:18px;letter-spacing:3px;cursor:pointer;line-height:1.15}
 .btn small{font-size:10.5px;letter-spacing:0;opacity:.8}
+a.btn{text-decoration:none}
+#teacherLink .zh::before{content:'👩‍🏫 '}
+.btn[hidden]{display:none}
 .btn.ghost{background:transparent;color:var(--ink)}
 .opt{display:flex;flex-direction:column;align-items:center;justify-content:center;height:46px;padding:0 14px;border-radius:999px;border:1px solid var(--ink3);background:transparent;color:var(--ink);font:inherit;font-size:15px;cursor:pointer;line-height:1.1}
 .opt small{font-size:10px;color:var(--ink2)}
@@ -126,6 +129,7 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
       <div class="lbl" data-i18n="name"></div>
       <input class="namebox" id="nameInp" maxlength="12">
       <button class="btn" id="startBtn" data-i18n="start"></button>
+      <a class="btn ghost" id="teacherLink" href="https://wangchiapin.github.io/profesor/#/home" data-i18n="teacher"></a>
       <div class="ver" style="margin-top:14px">v1-11</div>
     </div>
   </div>
@@ -259,6 +263,7 @@ const I18N = {
   chooseTheme:['選一個主題','选一个主题','Elige un tema','Pick a theme'],
   name:['你的名字','你的名字','Tu nombre','Your name'],
   start:['開始飛','开始飞','Empezar','Start'],
+  teacher:['老師管理中心','老师管理中心','Centro para profesores','Teacher center'],
   settings:['基本設定','基本设定','Ajustes','Settings'],
   dragHint:['👆 手指在畫面上拖動，龍就跟著移動。電腦：方向鍵、WASD 或滑鼠拖動。','👆 手指在画面上拖动，龙就跟着移动。电脑：方向键、WASD 或滑鼠拖动。',
     'Arrastra el dedo por la pantalla para mover al dragón. En computadora: flechas, WASD o arrastra con el ratón.','Drag your finger on the screen to move the dragon. On a computer: arrow keys, WASD or drag with the mouse.'],
@@ -691,6 +696,7 @@ function showFatal(key){
 }
 function renderModeNote(){
   const el = $('modeNote'); if(!el) return;
+  const tl = $('teacherLink'); if(tl) tl.hidden = SPECIAL;   // 班級／練習連結的學生看不到老師入口
   if(!SPECIAL || MAINT){ el.hidden = true; return; }
   el.hidden = false; fill(el, CLASS_MODE ? 'noteClass' : 'notePractice');
 }

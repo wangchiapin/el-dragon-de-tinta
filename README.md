@@ -51,7 +51,7 @@
 | `?class=<班級碼>` | 班級連結：學生輸入名字，成績存到 `class_scores`（`game='dragon'`，`k`＝主題 id，`extra={c,a,wr}`） |
 | `?d=<範圍碼>` | 練習範圍：讀 `shared_dragon/<碼>`，可含老師自訂主題（最多 3 個，每個 6～40 詞） |
 
-`RELEASE=true` 時，公開頁面只留食物、動物、顏色 3 個主題；免費老師的連結可再加交通、家裡（共 5 個）；訂閱老師 10 個全開。測試用 `window.__dragon.endNow()`。規則見 profesor repo 的 `firestore-rules-dragon.txt`。
+`RELEASE=true` 時，公開頁面只留食物、動物、顏色 3 個主題；免費老師的連結可再加交通、家裡（共 5 個）；訂閱老師 10 個全開。測試用 `window.__dragon.endNow()`；自動測試 `node tests/run.js`（見 `tests/README.md`）。規則見 profesor repo 的 `firestore-rules-dragon.txt`。
 
 ## 畫面風格
 
