@@ -87,9 +87,8 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
 #revBox{margin-top:14px;text-align:left}
 #revBox .rvT{font-size:15px;text-align:center}
 #revBox .rvT small{display:block;font-size:11px;color:var(--ink2)}
-#revBox .rvH{font-size:11px;color:var(--ink3);text-align:center;margin:2px 0 6px}
 #revList{max-height:34vh;overflow-y:auto;border-top:1px solid rgba(141,136,126,.5)}
-.rv{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid rgba(141,136,126,.35);cursor:pointer}
+.rv{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid rgba(141,136,126,.35)}
 .rv .w{min-width:74px;font-family:var(--kai);font-size:22px;font-weight:700;line-height:1.1}
 .rv .m{flex:1;font-size:12.5px;line-height:1.35;color:var(--ink)}
 .rv .m small{display:block;font-size:11px;color:var(--ink2)}
@@ -127,7 +126,7 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
       <div class="lbl" data-i18n="name"></div>
       <input class="namebox" id="nameInp" maxlength="12">
       <button class="btn" id="startBtn" data-i18n="start"></button>
-      <div class="ver" style="margin-top:14px">v1-10</div>
+      <div class="ver" style="margin-top:14px">v1-11</div>
     </div>
   </div>
 
@@ -141,7 +140,6 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
       <div class="cmt" id="resCmt"></div>
       <div id="revBox" hidden>
         <div class="rvT" id="revT"></div>
-        <div class="rvH" id="revH"></div>
         <div id="revList"></div>
         <div id="revNone" hidden></div>
       </div>
@@ -171,8 +169,6 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
         <button class="opt" data-v="es">中＋ES</button><button class="opt" data-v="en">中＋EN</button><button class="opt" data-v="zh">中</button></div></div>
       <div class="setrow"><div class="l" data-i18n="optPhon"></div><div class="row" id="gPhon">
         <button class="opt" data-v="pinyin">拼音</button><button class="opt" data-v="zhuyin">注音</button><button class="opt" data-v="both" data-i18n-opt="both"></button><button class="opt" data-v="off" data-i18n-opt="off"></button></div></div>
-      <div class="setrow"><div class="l" data-i18n="optRate"></div><div class="row" id="gRate">
-        <button class="opt" data-v="slow" data-i18n-opt="slow"></button><button class="opt" data-v="normal" data-i18n-opt="normal"></button><button class="opt" data-v="fast" data-i18n-opt="fast"></button></div></div>
       <div class="setrow"><div class="l" data-i18n="optMusic"></div><div class="row" id="gMusic">
         <button class="opt" data-v="on" data-i18n-opt="on"></button><button class="opt" data-v="off" data-i18n-opt="off"></button></div></div>
       <button class="btn" id="dlgDone" data-i18n="done"></button>
@@ -184,52 +180,7 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
-
-
-/* ===== 找不到中文聲音的提示（每天一分鐘遊戲統一做法）===== */
-(function(){
-  var shown=false;
-  function cfg(){ var s={}; try{ s=JSON.parse(localStorage.getItem('hanziGames.settings')||'{}')||{}; }catch(e){} return s; }
-  function isMandarin(v){ var l=String((v&&v.lang)||'').toLowerCase().replace(/_/g,'-'); if(l.indexOf('yue')===0||l.indexOf('zh-hk')===0) return false; return l==='zh'||l.indexOf('zh-')===0||l.indexOf('cmn')===0; }
-  var T={
-    none:{ zh:['這個裝置找不到中文（台灣）語音，聽不到念的內容。請到手機設定安裝「中文（台灣）」語音，或換一個裝置。','这个装置找不到中文（台湾）语音，听不到念的内容。请到手机设置安装「中文（台湾）」语音，或换一个装置。'],
-           es:'No se encontró una voz de chino (Taiwán) en este dispositivo, así que no se oirá el audio. Instala la voz «chino (Taiwán)» en los ajustes del móvil o usa otro dispositivo.',
-           en:'No Chinese (Taiwan) voice was found on this device, so you won’t hear the audio. Install the “Chinese (Taiwan)” voice in your phone settings, or use another device.' },
-    nosynth:{ zh:['這個瀏覽器不支援語音，聽不到念的內容。請換一個瀏覽器（例如 Chrome、Safari）。','这个浏览器不支持语音，听不到念的内容。请换一个浏览器（例如 Chrome、Safari）。'],
-           es:'Este navegador no admite voz, así que no se oirá el audio. Usa otro navegador (por ejemplo Chrome o Safari).',
-           en:'This browser does not support speech, so you won’t hear the audio. Try another browser (for example Chrome or Safari).' }
-  };
-  function show(kind){
-    if(shown||document.getElementById('hgVoiceHint')) return; shown=true;
-    var s=cfg(), lang=s.lang||'es', simp=s.script==='simp', t=T[kind];
-    var st=document.createElement('style');
-    st.textContent='#hgVoiceHint{position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:2147482999;width:min(94vw,520px);box-sizing:border-box;display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:12px;background:#fff6dc;border:1px solid #d8b24a;color:#5b4410;font:13px/1.4 system-ui,-apple-system,"Noto Sans TC","PingFang TC",sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.25)}#hgVoiceHint .m{flex:1}#hgVoiceHint .m small{display:block;font-size:11px;opacity:.85;margin-top:2px}#hgVoiceHint button{border:0;background:transparent;color:inherit;font-size:16px;line-height:1;padding:0 2px;cursor:pointer}';
-    document.head.appendChild(st);
-    var d=document.createElement('div'); d.id='hgVoiceHint'; d.setAttribute('role','status');
-    var m=document.createElement('div'); m.className='m';
-    var zh=document.createElement('div'); zh.textContent = simp ? t.zh[1] : t.zh[0]; m.appendChild(zh);
-    if(lang!=='zh'){ var sm=document.createElement('small'); sm.textContent = lang==='en' ? t.en : t.es; m.appendChild(sm); }
-    var x=document.createElement('button'); x.type='button'; x.textContent='✕'; x.setAttribute('aria-label','Close');
-    x.addEventListener('click',function(){ d.remove(); });
-    d.appendChild(m); d.appendChild(x); document.body.appendChild(d);
-  }
-  function check(){
-    try{
-      if(!window.speechSynthesis){ show('nosynth'); return; }
-      var vs=window.speechSynthesis.getVoices()||[];
-      if(vs.length && !vs.some(isMandarin)) show('none');   // 清單是空的時（有些手機一開始就是空的）先不判斷
-    }catch(e){}
-  }
-  function start(){
-    check();
-    try{ window.speechSynthesis.addEventListener('voiceschanged', check); }catch(e){}
-    setTimeout(check,1500); setTimeout(check,4000);
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', start); else start();
-})();
-/* ===== /找不到中文聲音的提示 ===== */
-
-/* ===== 一鍵靜音（只關音樂和音效，不影響念字的語音）— 每天一分鐘遊戲統一做法 ===== */
+/* ===== 一鍵靜音（關掉音樂和音效）— 每天一分鐘遊戲統一做法 ===== */
 (function(){
   var KEY='hg.mute.dragon', MOUNT='', muted=false, masters=[];
   try{ muted = localStorage.getItem(KEY)==='1'; }catch(e){}
@@ -279,10 +230,9 @@ h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2p
    一、共用設定（和 跑吧／色數／比比看 同一把 localStorage 鑰匙）
    ===================================================================== */
 const SETTINGS_KEY = 'hanziGames.settings';
-const SET_OPTS = { script:['trad','simp'], lang:['es','en','zh'], phon:['pinyin','zhuyin','both','off'], rate:['slow','normal','fast'] };
-const RATE_VALUE = { slow:0.45, normal:0.65, fast:0.85 };
+const SET_OPTS = { script:['trad','simp'], lang:['es','en','zh'], phon:['pinyin','zhuyin','both','off'] };
 function readSettings(){
-  const out = { v:1, script:'trad', lang:'es', phon:'pinyin', rate:'normal' };
+  const out = { v:1, script:'trad', lang:'es', phon:'pinyin' };
   let saved = null;
   try{ saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null'); }catch(e){}
   if(saved && typeof saved === 'object'){
@@ -294,7 +244,7 @@ function writeSettings(o){
   try{
     let cur = {};
     try{ cur = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') || {}; }catch(e){}
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(Object.assign(cur, { v:1, script:o.script, lang:o.lang, phon:o.phon, rate:o.rate })));
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(Object.assign(cur, { v:1, script:o.script, lang:o.lang, phon:o.phon })));   // 不動共用設定裡的語速（跑吧等其他遊戲還在用）
   }catch(e){}
 }
 const S = readSettings();
@@ -327,23 +277,18 @@ const I18N = {
   lbOff:['排行榜暫時連不上','排行榜暂时连不上','No se pudo cargar la clasificación','Leaderboard unavailable'],
   eaten:['吃對','吃对','Aciertos','Correct'],
   revTitle:['複習清單','复习清单','Para repasar','To review'],
-  revHint:['點一下，聽讀音','点一下，听读音','Toca para escuchar','Tap to listen'],
   revWrong:['吃錯','吃错','Error','Wrong'],
   revMiss:['漏掉','漏掉','Perdida','Missed'],
   revNone:['沒有要複習的字，太棒了！','没有要复习的字，太棒了！','¡Nada que repasar, genial!','Nothing to review — great!'],
   optScript:['字形','字形','Escritura','Script'],
   optLang:['翻譯','翻译','Traducción','Translation'],
   optPhon:['讀音','读音','Pronunciación','Reading'],
-  optRate:['語速','语速','Velocidad de voz','Voice speed'],
   both:['兩個','两个','Ambos','Both'],
   off:['關','关','No','Off'],
   on:['開','开','Sí','On'],
   pause:['暫停','暂停','Pausa','Paused'],
   resume:['繼續','继续','Continuar','Resume'],
   optMusic:['背景音樂','背景音乐','Música de fondo','Music'],
-  slow:['慢','慢','Lento','Slow'],
-  normal:['中','中','Normal','Normal'],
-  fast:['快','快','Rápido','Fast'],
   maint:['維修中，請稍後再來','维修中，请稍后再来','En mantenimiento, vuelve más tarde','Under maintenance — please come back later'],
   linkBad:['這個連結已失效，請向老師確認','这个链接已失效，请向老师确认','Este enlace ya no es válido; pregunta a tu profesor','This link is no longer valid — please ask your teacher'],
   linkOff:['暫時連不上，請稍後再試','暂时连不上，请稍后再试','No se pudo conectar; inténtalo más tarde','Could not connect — please try again later'],
@@ -979,7 +924,7 @@ function spawnRow(){
 }
 
 /* =====================================================================
-   六、聲音（輕輕的撥弦聲）與語音
+   六、聲音（輕輕的撥弦聲）
    ===================================================================== */
 let AC = null, musicBus = null, sfxBus = null, reverb = null, noiseBuf = null;
 let musicOn = true;
@@ -1122,35 +1067,12 @@ function musicTick(){
 }
 function startMusicLoop(){ if(!mTimer) mTimer = setInterval(musicTick, 100); }
 function restartMusic(){ mStep = 0; mNext = 0; }
-function duckMusic(sec){                                                // 念字的時候，音樂輕輕退後一點
-  if(!AC || !musicBus) return;
-  try{
-    const t = AC.currentTime, g = musicBus.gain;
-    g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0.4, t+0.05);
-    g.setValueAtTime(0.4, t+sec); g.linearRampToValueAtTime(1, t+sec+0.5);
-  }catch(e){}
-}
 function setMusic(on){
   musicOn = on;
   try{ localStorage.setItem('dragonInk.music', on ? '1' : '0'); }catch(e){}
   $('musicBtn').classList.toggle('off', !on);
   markGroup('gMusic', on ? 'on' : 'off');
 }
-let voices = [];
-function loadVoices(){ try{ voices = speechSynthesis.getVoices() || []; }catch(e){ voices = []; } }
-if('speechSynthesis' in window){ loadVoices(); try{ speechSynthesis.onvoiceschanged = loadVoices; }catch(e){} }
-function speak(text){
-  if(!('speechSynthesis' in window)) return;
-  try{
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'zh-TW'; u.rate = RATE_VALUE[S.rate] || 0.65;
-    const v = voices.find(v=>/zh[-_]TW/i.test(v.lang)) || voices.find(v=>/^zh/i.test(v.lang) && !/^(yue|zh[-_]hk)/i.test(v.lang));   // 排除廣東話
-    if(v) u.voice = v;
-    speechSynthesis.speak(u);
-  }catch(e){}
-}
-
 /* =====================================================================
    七、排行榜接口（之後接 Firebase，只要把 enabled 改 true、補上兩個函式）
    ===================================================================== */
@@ -1252,7 +1174,6 @@ function showIdiom(w){
   e.innerHTML = '<div class="z">'+wText(w)+'</div>' + (wRead(w) ? '<div class="p">'+wRead(w)+'</div>' : '') + (wTrans(w) ? '<div class="t">'+wTrans(w)+'</div>' : '');
   e.classList.add('on');
   clearTimeout(eggTimer); eggTimer = setTimeout(()=>e.classList.remove('on'), 4200);
-  speak(wText(w)); duckMusic(3);
 }
 function checkEggs(){
   if(score >= 500 && !eggDone.has('gold')){ eggDone.add('gold'); goldT = 12; sfxEgg(); }
@@ -1328,7 +1249,7 @@ function eat(it){
     score += 100; mouthT = 0.3;
     for(let k=0;k<22;k++){ const a = rnd(0,6.28), v = rnd(60,260); parts.push({ x:it.x, y:it.y, vx:Math.cos(a)*v, vy:Math.sin(a)*v-30, r:rnd(2,5), life:rnd(0.6,1.1), max:1.1, gold:true }); }
     floats.push({ x:it.x, y:it.y-r, txt:'+100 '+(S.script==='simp'?'金':'金'), life:1.2, max:1.2, red:false });
-    sfxEgg(); speak(it.text); duckMusic(1.2);
+    sfxEgg();
     renderHud(); checkEggs();
     return;
   }
@@ -1340,7 +1261,7 @@ function eat(it){
     mouthT = 0.25;
     inkSplash(it.x, it.y, 14, 1, false);
     floats.push({ x:it.x, y:it.y-r, txt:'+'+pts, life:0.9, max:0.9, red:false });
-    sfxGood(); speak(it.text); duckMusic(1.2);
+    sfxGood();
     if(correct % 8 === 0){ level++; speed = levelSpeed(); showToast('up'); sfxUp(); }
     renderHud(); checkEggs();
   } else {
@@ -1348,7 +1269,7 @@ function eat(it){
     wrongMap.set(it.w, (wrongMap.get(it.w)||0) + 1);
     shake = 0.35; hurtT = 0.5;
     inkSplash(it.x, it.y, 26, 1.6, true);
-    sfxBad(); speak(it.text); duckMusic(1.2);
+    sfxBad();
     try{ navigator.vibrate && navigator.vibrate(60); }catch(e){}
     renderHud();
     if(hearts <= 0) endGame();
@@ -1403,12 +1324,11 @@ function renderReview(){
   fill($('revT'), 'revTitle');
   if(!rows.length){
     box.hidden = correct === 0 && wrongCount === 0;      // 一個字都沒玩到就不顯示
-    $('revH').textContent = ''; list.hidden = true;
+    list.hidden = true;
     $('revNone').hidden = false; fill($('revNone'), 'revNone');
     return;
   }
   box.hidden = false; list.hidden = false; $('revNone').hidden = true;
-  $('revH').textContent = pair('revHint')[0] + (S.lang === 'zh' ? '' : ' · ' + pair('revHint')[1]);
   rows.slice(0, 20).forEach(r=>{
     const text = wText(r.w), read = wRead(r.w), tr = wTrans(r.w);
     const div = document.createElement('div'); div.className = 'rv';
@@ -1417,7 +1337,6 @@ function renderReview(){
     div.querySelector('.w').textContent = text;
     div.querySelector('.m').innerHTML = (read ? '<span>'+read+'</span>' : '') + (tr ? '<small>'+tr+'</small>' : '');
     div.querySelector('.tag').textContent = tag;
-    div.addEventListener('click', ()=>speak(text));
     list.appendChild(div);
   });
 }
@@ -1835,8 +1754,8 @@ function applyLang(){
   document.title = tz;
 }
 function markGroup(id, val){ document.querySelectorAll('#'+id+' .opt').forEach(b=>b.classList.toggle('on', b.dataset.v === val)); }
-function syncSettingsUI(){ markGroup('gScript',S.script); markGroup('gLang',S.lang); markGroup('gPhon',S.phon); markGroup('gRate',S.rate); markGroup('gMusic', musicOn ? 'on' : 'off'); $('musicBtn').classList.toggle('off', !musicOn); }
-[['gScript','script'],['gLang','lang'],['gPhon','phon'],['gRate','rate']].forEach(([id,k])=>{
+function syncSettingsUI(){ markGroup('gScript',S.script); markGroup('gLang',S.lang); markGroup('gPhon',S.phon); markGroup('gMusic', musicOn ? 'on' : 'off'); $('musicBtn').classList.toggle('off', !musicOn); }
+[['gScript','script'],['gLang','lang'],['gPhon','phon']].forEach(([id,k])=>{
   document.querySelectorAll('#'+id+' .opt').forEach(b=>b.addEventListener('click', ()=>{
     S[k] = b.dataset.v; writeSettings(S); syncSettingsUI(); applyLang();
   }));
@@ -1845,7 +1764,6 @@ let dlgFromPlay = false;
 function pauseGame(){
   if(state !== 'play' || paused) return;
   paused = true; $('pauseScr').hidden = false;
-  try{ speechSynthesis.cancel(); }catch(e){}
 }
 function resumeGame(){
   $('pauseScr').hidden = true;
