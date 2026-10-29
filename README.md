@@ -3,6 +3,8 @@
 > 水墨風的向上飛行遊戲：操控一條會飛的龍，只吃指定主題裡的字。
 
 - **網址：** https://wangchiapin.github.io/el-dragon-de-tinta/
+- **Firebase 專案：** memorma-24dab（排行榜、遊玩紀錄 `plays`／`visits`）；subscription-48d3c（老師連結、班級、範圍碼，老師管理中心那個）
+- **登入方式：** 學生與玩家都是匿名登入（不用註冊）；老師端的設定在老師管理中心（Google 登入）
 - **對象：** 學中文的西語學生（介面支援 中＋西／中＋英／只有中文）
 - **狀態：** v1-11（拿掉念字），已開放（2026-10-21）：公開頁只有食物、動物、顏色 3 個主題；老師連結（練習／班級／範圍）可開放更多。`RELEASE=false` 可暫時改回維修中；網址加 `?dev=1` 可預覽。
 
@@ -55,7 +57,7 @@
 | `?class=<班級碼>` | 班級連結：學生輸入名字，成績存到 `class_scores`（`game='dragon'`，`k`＝主題 id，`extra={c,a,wr}`） |
 | `?d=<範圍碼>` | 練習範圍：讀 `shared_dragon/<碼>`，可含老師自訂主題（最多 3 個，每個 6～40 詞） |
 
-`RELEASE=true` 時，公開頁面只留食物、動物、顏色 3 個主題；免費老師的連結可再加交通、家裡（共 5 個）；訂閱老師 10 個全開。測試用 `window.__dragon.endNow()`；自動測試 `node tests/run.js`（見 `tests/README.md`）。規則見 profesor repo 的 `firestore-rules-dragon.txt`。
+`RELEASE=true` 時，公開頁面只留食物、動物、顏色 3 個主題；免費老師的連結可再加交通、家裡（共 5 個）；訂閱老師 10 個全開。測試用 `window.__dragon.endNow()`；自動測試 `node tests/run.js`（見 `tests/README.md`）。規則正本在 game-kit（私人 repo）的 `firebase-rules/``subscription-48d3c.rules.txt`。
 
 ## 畫面風格
 
@@ -76,6 +78,8 @@
 ## 檔案
 
 - `index.html` — 整個遊戲（單檔，不需要建置）
+- `og.jpg` — 分享連結預覽縮圖（1200x630），貼到 LINE／WhatsApp 時顯示；名稱來自 `index.html` 的 `og:title`「墨龍飛天 · El dragón de tinta」（2026-10-28 加入）
+- `tests/` — 自動測試（`node tests/run.js`）
 
 ## 手機瀏覽器備註：捲動後回不到頂端（2026-10-24）
 iPhone 版 Chrome 上，頁面可以捲動時，往下捲之後有時回不到最上面（Safari 正常）。
