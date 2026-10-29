@@ -21,7 +21,7 @@ const SEED = {
   [M]: {}
 };
 
-async function open(browser, { qs = '', ls = null, w = 390, h = 844 } = {}){
+async function open(browser, { qs = '', ls = null, w = 390, h = 844, maint = false } = {}){
   const ctx = await browser.newContext({ viewport: { width: w, height: h } });
   const page = await ctx.newPage();
   const errors = [];
@@ -33,6 +33,7 @@ async function open(browser, { qs = '', ls = null, w = 390, h = 844 } = {}){
     return r.abort();
   });
   await page.addInitScript('window.__SEED=' + JSON.stringify(SEED) + ';');
+  if(maint) await page.addInitScript('window.__SEED[' + JSON.stringify(C) + '].portalStatus={"center-dragon":{off:true}};');
   if(ls) await page.addInitScript('try{' + Object.keys(ls).map(k => 'localStorage.setItem(' + JSON.stringify(k) + ',' + JSON.stringify(ls[k]) + ');').join('') + '}catch(e){}');
   await page.addInitScript(MOCK);
   await page.goto(BASE + '/index.html' + qs);
@@ -105,6 +106,21 @@ const db = (page, pid) => page.evaluate(p => window.__DB[p], pid);
     const t = await page.$eval('#fatal', e => e.innerText).catch(() => '');
     ok(t.includes('這個連結已失效'), '班級碼不存在：顯示「這個連結已失效」', t);
     await ctx.close(); }
+
+  console.log('\n[5b] 2026-10-29：老師中心維修開關開啟 → 班級／練習／範圍連結都不能玩、不記成績；?preview 不受影響；公開頁照常');
+  for(const q of ['?class=' + CID, '?th=food', '?d=' + SET]){
+    const { page, ctx, errors } = await open(browser, { qs: q, maint: true });
+    await page.waitForSelector('#fatal', { timeout: 8000 }).catch(() => {});
+    const t = await page.$eval('#fatal', e => e.innerText).catch(() => '');
+    ok(t.includes('維修中'), '維修中：顯示維修中 ' + q, t);
+    await page.evaluate(() => document.getElementById('startBtn').click());
+    ok(await page.evaluate(() => window.__dragon.state.state) !== 'play', '維修中：開始鈕沒用 ' + q);
+    ok(Object.keys((await db(page, C)).class_scores || {}).length === 0, '維修中：沒有寫成績 ' + q);
+    ok(errors.length === 0, '沒有程式錯誤', errors); await ctx.close(); }
+  { const { page, ctx } = await open(browser, { qs: '?class=' + CID + '&preview=1', maint: true });
+    ok(!(await page.$('#fatal')), '預覽（?preview）不受維修影響'); await ctx.close(); }
+  { const { page, ctx } = await open(browser, { maint: true });
+    ok(!(await page.$('#fatal')), '公開頁（沒有連結參數）不受維修影響'); await ctx.close(); }
 
   console.log('\n[6] 班級連結：要名字、成績回傳、班級排行榜');
   { const { page, ctx, errors } = await open(browser, { qs: '?class=' + CID });

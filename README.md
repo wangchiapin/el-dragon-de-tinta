@@ -6,7 +6,7 @@
 - **Firebase 專案：** memorma-24dab（排行榜、遊玩紀錄 `plays`／`visits`）；subscription-48d3c（老師連結、班級、範圍碼，老師管理中心那個）
 - **登入方式：** 學生與玩家都是匿名登入（不用註冊）；老師端的設定在老師管理中心（Google 登入）
 - **對象：** 學中文的西語學生（介面支援 中＋西／中＋英／只有中文）
-- **狀態：** v1-11（拿掉念字），已開放（2026-10-21）：公開頁只有食物、動物、顏色 3 個主題；老師連結（練習／班級／範圍）可開放更多。`RELEASE=false` 可暫時改回維修中；網址加 `?dev=1` 可預覽。
+- **狀態：** v1-11（拿掉念字），已開放（2026-10-21）：公開頁只有食物、動物、顏色 3 個主題；老師連結（練習／班級／範圍）可開放更多。維修開關只有一個：老師管理中心（分享區 stats.html 的「老師管理中心遊戲開關」），維修中時所有班級／練習連結都不能玩、不記成績；網址加 `?preview` 可預覽。
 
 ## 玩法
 
@@ -57,7 +57,7 @@
 | `?class=<班級碼>` | 班級連結：學生輸入名字，成績存到 `class_scores`（`game='dragon'`，`k`＝主題 id，`extra={c,a,wr}`） |
 | `?d=<範圍碼>` | 練習範圍：讀 `shared_dragon/<碼>`，可含老師自訂主題（最多 3 個，每個 6～40 詞） |
 
-`RELEASE=true` 時，公開頁面只留食物、動物、顏色 3 個主題；免費老師的連結可再加交通、家裡（共 5 個）；訂閱老師 10 個全開。測試用 `window.__dragon.endNow()`；自動測試 `node tests/run.js`（見 `tests/README.md`）。規則正本在 game-kit（私人 repo）的 `firebase-rules/``subscription-48d3c.rules.txt`。
+公開頁面只留食物、動物、顏色 3 個主題；免費老師的連結可再加交通、家裡（共 5 個）；訂閱老師 10 個全開。測試用 `window.__dragon.endNow()`；自動測試 `node tests/run.js`（見 `tests/README.md`）。規則正本在 game-kit（私人 repo）的 `firebase-rules/``subscription-48d3c.rules.txt`。
 
 ## 畫面風格
 
@@ -86,3 +86,7 @@ iPhone 版 Chrome 上，頁面可以捲動時，往下捲之後有時回不到�
 本遊戲整頁固定不捲動（`overflow:hidden`），不受影響，不需要修改。之後若新增可以捲動的畫面，請設 `<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">`（不要加 `viewport-fit=cover`）並加 `html{color-scheme:light}`（見 game-kit README）。
 
 - 暱稱欄最多 16 字（2026-10-29 由 12 字放寬，與其他遊戲一致；公開排行榜仍只取前 14 字，因為規則上限是 14）。
+
+## 維修開關（2026-10-29）
+- 只有一個開關：老師管理中心（`portalStatus/center-dragon`，`off:true`＝維修中）。遊戲裡原本的 `RELEASE`、`?dev=1` 已刪除。
+- 維修中時，班級／練習（`?th=`）／範圍（`?d=`）連結都顯示「維修中」，不能玩、不記成績；`?preview` 不受影響；公開頁不受影響。

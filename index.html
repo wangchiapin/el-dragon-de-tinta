@@ -666,12 +666,11 @@ try{ const t = localStorage.getItem('dragonInk.theme'); const i = THEMES.findInd
    ?class=班級碼    班級模式：成績回傳給老師（老師要訂閱中）
    ?th=food-animal  練習連結：只開指定的內建主題（不記成績、不進公開排行榜）
    ?d=範圍碼        練習範圍：內建主題＋老師自訂主題（存在老師管理中心資料庫）
-   RELEASE=false 時，以上連結一律顯示「維修中」；網址加 ?dev=1 可以先測試。（目前已開放：RELEASE=true）
-   公開頁（沒有參數）：RELEASE 之後只開 食物、動物、顏色。
+   維修開關：只有一個，在老師管理中心（portalStatus/center-dragon，off:true＝維修中，Ben 在分享區 stats.html 切換）。
+   維修中：以上連結都顯示「維修中」、不能玩、不記成績；?preview（老師預覽）不受影響；讀不到開關就照常放行。
+   公開頁（沒有參數）：只開 食物、動物、顏色。
    ===================================================================== */
-const RELEASE = true;
 const QSD = new URLSearchParams(location.search);
-const DEV = QSD.get('dev') === '1';
 const KNOWN = new Set(THEMES.map(t=>t.id));
 const CLASS_ID = String(QSD.get('class')||'').toLowerCase();
 const CLASS_MODE = /^[a-z0-9]{8,32}$/.test(CLASS_ID);
@@ -679,7 +678,7 @@ const TH_IDS = String(QSD.get('th')||'').toLowerCase().split(/[-,_]/).filter(x=>
 const SET_P = String(QSD.get('d')||'').toLowerCase();
 const SET_MODE = /^[a-z0-9]{8,32}$/.test(SET_P);
 const SPECIAL = CLASS_MODE || TH_IDS.length > 0 || SET_MODE;
-const MAINT = !RELEASE && !DEV && SPECIAL;
+let MAINT = false;   // 老師中心維修中（linkBoot 讀到 off:true 才會是 true）
 const PUBLIC_FREE = ['food','animal','color'];
 const CUSTOM_MAX = 3, CUSTOM_WORDS_MAX = 40;
 const CENTRAL_CONFIG = {
@@ -691,9 +690,9 @@ const CENTRAL_CONFIG = {
   appId: "1:276281656991:web:de242ba22373816c3044aa"
 };
 let ALLOWED = null;                       // null＝內建主題全開
-if(!SPECIAL && (RELEASE || DEV)) ALLOWED = new Set(PUBLIC_FREE);
+if(!SPECIAL) ALLOWED = new Set(PUBLIC_FREE);
 if(TH_IDS.length) ALLOWED = new Set(TH_IDS);
-let classData = null, linkReady = !(CLASS_MODE || SET_MODE);
+let classData = null, linkReady = !SPECIAL;   // 所有班級／練習連結都要先讀完開關（維修中？）才能開始
 const themeAllowed = t => !ALLOWED || ALLOWED.has(t.id);
 function ensureThemeIdx(){
   if(!THEMES[themeIdx] || !themeAllowed(THEMES[themeIdx])){ const i = THEMES.findIndex(themeAllowed); themeIdx = i >= 0 ? i : 0; }
@@ -818,11 +817,20 @@ async function classFinish(entry){
     holder.appendChild(ol);
   }catch(e){ console.warn(e); }
 }
+async function checkMaint(){
+  if(!SPECIAL || QSD.has('preview')) return;
+  try{
+    const app = await getCentral();
+    const m = await app.firestore().collection('portalStatus').doc('center-dragon').get();
+    if(m.exists && m.data().off === true) MAINT = true;
+  }catch(e){ console.warn('maint check failed', e); }
+}
 async function linkBoot(){
-  if(MAINT){ showFatal('maint'); return; }
   ensureThemeIdx(); renderModeNote();
   if(!linkReady){
     $('themeGrid').textContent = pair('lbLoad')[0];
+    await checkMaint();
+    if(MAINT){ renderModeNote(); showFatal('maint'); return; }
     try{
       const jobs = [];
       if(CLASS_MODE) jobs.push(fetchClass().then(d => { classData = d; }));
