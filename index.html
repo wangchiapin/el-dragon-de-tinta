@@ -1326,12 +1326,13 @@ function endGame(){
     $('resRec').hidden = !rec; $('resRec').innerHTML = rec ? pair('newRec')[0] : '';
     const ck = correct<=0?'c0':correct<10?'c1':correct<25?'c2':correct<50?'c3':'c4';
     fill($('resCmt'), ck);
-    $('lbBox').hidden = !(pubBoard() || CLASS_MODE);
+    $('lbBox').hidden = !((pubBoard() || CLASS_MODE) && !QSD.has('preview'));   // ?preview（老師預覽）不記成績、不顯示榜單
     renderReview();
   }, 600);
   const wr = [...wrongMap.keys(), ...[...missMap.keys()].filter(w=>!wrongMap.has(w))].slice(0,5).map(w=>w[0]);
   const entry = { name: ($('nameInp').value||'').trim() || '玩家', theme: curTheme().id, score, correct, altitude: alt, ts: Date.now(), wr };
-  if(CLASS_MODE && classData){ classFinish(entry); }
+  if(QSD.has('preview')){ /* 老師預覽：不回傳成績 */ }
+  else if(CLASS_MODE && classData){ classFinish(entry); }
   else if(pubBoard()){
     const th = entry.theme;
     (async () => {
