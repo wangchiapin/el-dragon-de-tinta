@@ -680,7 +680,7 @@ const SET_MODE = /^[a-z0-9]{8,32}$/.test(SET_P);
 const SPECIAL = CLASS_MODE || TH_IDS.length > 0 || SET_MODE;
 let MAINT = false;   // 老師中心維修中（linkBoot 讀到 off:true 才會是 true）
 const PUBLIC_FREE = ['food','animal','color'];
-const CUSTOM_MAX = 3, CUSTOM_WORDS_MAX = 40;
+const CUSTOM_MAX = 30, CUSTOM_WORDS_MAX = 200;   // 一般老師 3 個主題、每個 40 詞；管理員帳號放寬到 30／200
 const CENTRAL_CONFIG = {
   apiKey: "AIzaSyCHZz8Hh7m45bJfZC9aK_f_NvUD-aUeuzU",
   authDomain: "subscription-48d3c.firebaseapp.com",
