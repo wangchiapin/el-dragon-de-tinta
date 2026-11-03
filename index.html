@@ -106,6 +106,26 @@ a.btn{text-decoration:none}
 .setrow .l{font-size:13px;margin-bottom:6px}
 .setrow .l small{color:var(--ink2);font-size:10.5px;margin-left:4px}
 .setrow .opt{height:40px;font-size:14px}
+
+/* ⓘ 說明鈕、標題的龍 */
+#menuInfo{position:absolute;top:12px;right:66px}
+.infoSvg{width:24px;height:24px;display:block}
+.ttlWrap{position:relative;margin-top:28px}
+.ttlWrap h1 small{margin-top:26px}
+#menu .card{isolation:isolate}
+.ttlWrap h1{position:relative;z-index:1}
+.dgB,.dgF{position:absolute;left:50%;margin-left:-170px;top:-42px;pointer-events:none;overflow:visible}
+.dgB{z-index:0}.dgF{z-index:2}
+#infoScr{background:rgba(28,27,25,.5)}
+#infoScr .card{text-align:left;background:#f2ece0}
+#infoScr h2{margin:0;text-align:center;font-family:var(--kai);font-size:22px;letter-spacing:4px;font-weight:700}
+#infoScr h2 small{display:block;font-family:var(--serif);font-size:12px;letter-spacing:2px;color:var(--ink2);font-weight:400;margin-top:3px}
+#infoScr h4{margin:14px 0 6px;font-size:14px;letter-spacing:2px;text-align:center}
+#infoScr h4 small{display:block;font-size:10.5px;color:var(--ink2);letter-spacing:1px;font-weight:400}
+#infoScr ol{margin:0;padding-left:22px;font-size:14px;line-height:1.5}
+#infoScr li{margin-bottom:9px}
+#infoScr li small{display:block;font-size:11.5px;line-height:1.45;color:var(--ink2);margin-top:1px}
+#infoScr li::marker{color:var(--red);font-family:var(--kai)}
 </style>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="每天一分鐘 · Cada día unos minutos">
@@ -134,7 +154,18 @@ a.btn{text-decoration:none}
   <div class="screen" id="menu">
     <div class="card">
       <button class="hb" id="menuGear" aria-label="settings"><svg class="gearSvg" viewBox="0 0 28 28" aria-hidden="true"><g filter="url(#inkRough)" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="14" cy="14" r="6.6" stroke-width="2.6"/><path stroke-width="3.2" d="M14 2.8v3.4M14 21.8v3.4M2.8 14h3.4M21.8 14h3.4"/><path stroke-width="2.8" d="M6.2 6.2l2.2 2.2M19.6 19.6l2.2 2.2M21.8 6.2l-2.2 2.2M8.4 19.6l-2.2 2.2"/></g><circle cx="14" cy="14" r="1.9" fill="currentColor" filter="url(#inkRough)"/></svg></button>
-      <h1><span data-i18n-zh="title"></span><small data-i18n-sm="title"></small></h1>
+      <button class="hb" id="menuInfo" aria-label="info"><svg class="infoSvg" viewBox="0 0 28 28" aria-hidden="true"><g filter="url(#inkRough)" fill="currentColor"><rect x="12.3" y="12" width="3.4" height="10.5" rx="1.4"/></g><circle cx="14" cy="7.3" r="2.3" fill="currentColor" filter="url(#inkRough)"/></svg></button>
+      <div class="ttlWrap"><svg class="dgB" viewBox="-62 -42 330 120" width="330" height="120" aria-hidden="true"><path d="M-44.3 44.3 L-43.9 44.7 L-43.5 45.1 L-43.0 45.6 L-42.5 46.1 L-41.9 46.7 L-41.3 47.3 L-40.7 48.0 L-40.0 48.6 L-39.3 49.4 L-38.5 50.1 L-37.8 50.8 L-37.0 51.5 L-36.2 52.3 L-35.4 53.0 L-34.6 53.7 L-33.7 54.4 L-32.9 55.0 L-32.1 55.6 L-31.2 56.2 L-30.4 56.7 L-29.6 57.2 L-28.8 57.7 L-27.9 58.1 L-27.1 58.6 L-26.2 59.0 L-25.3 59.4 L-24.5 59.8 L-23.6 60.2 L-22.6 60.6 L-21.7 60.9 L-20.8 61.3 L-19.9 61.6 L-18.9 61.9 L-18.0 62.2 L-17.0 62.4 L-16.0 62.7 L-15.1 62.9 L-14.1 63.0 L-13.1 63.2 L-12.1 63.3 L-11.1 63.4 L-10.1 63.4 L-9.1 63.5 L-8.1 63.4 L-7.1 63.4 L-6.0 63.3 L-5.0 63.2 L-4.0 63.0 L-3.0 62.9 L-2.0 62.7 L-0.9 62.6 L0.1 62.4 L1.1 62.2 L2.2 62.0 L3.2 61.8 L4.2 61.6 L5.2 61.4 L6.3 61.2 L7.3 61.0 L8.4 60.8 L9.5 60.6 L10.6 60.4 L11.7 60.1 L12.8 59.8 L13.9 59.5 L15.0 59.2 L16.1 58.9 L17.2 58.6 L18.4 58.3 L19.5 58.0 L20.6 57.7 L21.7 57.5 L22.7 57.2 L23.8 57.0 L24.9 56.8 L25.9 56.6 L27.0 56.5 L28.0 56.4 L29.0 56.4 L30.0 56.4 L31.0 56.4 L32.0 56.5 L33.0 56.6 L34.0 56.8 L35.0 57.0 L36.0 57.2 L37.0 57.5 L38.1 57.8 L39.1 58.1 L40.2 58.4 L41.2 58.7 L42.3 59.1 L43.4 59.4 L44.5 59.8 L45.6 60.1 L46.7 60.5 L47.9 60.8 L49.0 61.2 L50.2 61.5 L51.4 61.8 L52.5 62.1 L53.6 62.4 L54.8 62.7 L55.9 63.0 L57.1 63.3 L58.3 63.7 L59.4 64.1 L60.7 64.4 L61.9 64.8 L63.1 65.1 L64.3 65.5 L65.6 65.8 L66.9 66.1 L68.1 66.4 L69.4 66.6 L70.7 66.8 L72.0 67.0 L73.3 67.2 L74.7 67.3 L76.0 67.3 L77.3 67.3 L78.6 67.3 L80.0 67.2 L81.3 67.0 L82.5 66.8 L83.8 66.6 L85.1 66.4 L86.4 66.2 L87.6 65.9 L88.9 65.6 L90.1 65.3 L91.3 65.0 L92.6 64.7 L93.8 64.4 L95.0 64.0 L96.2 63.7 L97.3 63.4 L98.5 63.1 L99.7 62.9 L100.9 62.6 L102.1 62.3 L103.4 62.0 L104.7 61.7 L105.9 61.3 L107.1 60.9 L108.4 60.6 L109.6 60.2 L110.8 59.8 L112.0 59.4 L113.2 59.1 L114.3 58.7 L115.5 58.4 L116.6 58.1 L117.7 57.9 L118.8 57.6 L119.9 57.4 L121.0 57.3 L122.0 57.2 L123.1 57.1 L124.1 57.0 L125.1 57.1 L126.2 57.1 L127.2 57.2 L128.3 57.4 L129.4 57.5 L130.4 57.7 L131.6 58.0 L132.7 58.2 L133.8 58.5 L134.9 58.8 L136.1 59.1 L137.3 59.5 L138.4 59.8 L139.6 60.2 L140.8 60.5 L142.1 60.9 L143.3 61.2 L144.5 61.6 L145.8 61.9 L147.0 62.2 L148.1 62.5 L149.3 62.8 L150.4 63.1 L151.5 63.5 L152.7 63.8 L153.9 64.2 L155.1 64.6 L156.3 65.0 L157.5 65.4 L158.7 65.8 L160.0 66.1 L161.2 66.5 L162.5 66.9 L163.8 67.2 L165.1 67.5 L166.4 67.8 L167.7 68.0 L169.1 68.2 L170.4 68.4 L171.8 68.5 L173.2 68.5 L174.6 68.5 L175.9 68.4 L177.3 68.3 L178.6 68.2 L180.0 68.0 L181.3 67.8 L182.6 67.6 L183.9 67.4 L185.2 67.1 L186.4 66.8 L187.7 66.6 L188.9 66.3 L190.1 66.0 L191.3 65.7 L192.5 65.4 L193.6 65.2 L194.8 64.9 L195.9 64.7 L196.9 64.4 L198.0 64.2 L199.2 64.0 L200.3 63.7 L201.4 63.5 L202.5 63.2 L203.6 62.9 L204.7 62.7 L205.7 62.4 L206.8 62.1 L207.8 61.8 L208.8 61.6 L209.8 61.3 L210.8 61.0 L211.7 60.8 L212.7 60.5 L213.6 60.3 L214.5 60.1 L215.4 59.8 L216.2 59.6 L217.0 59.4 L217.9 59.2 L218.7 59.0 L219.6 58.9 L220.4 58.7 L221.2 58.5 L222.0 58.3 L222.9 58.1 L223.6 58.0 L224.4 57.8 L225.2 57.6 L225.9 57.5 L226.6 57.3 L227.3 57.2 L227.9 57.1 L228.5 56.9 L229.1 56.8 L229.6 56.7 L230.1 56.6 L230.6 56.5 L230.9 56.5 L229.1 47.5 L228.7 47.6 L228.3 47.7 L227.8 47.8 L227.3 47.9 L226.7 48.0 L226.1 48.2 L225.5 48.3 L224.8 48.4 L224.1 48.6 L223.3 48.7 L222.6 48.9 L221.8 49.1 L221.0 49.2 L220.1 49.4 L219.3 49.6 L218.4 49.8 L217.6 50.0 L216.7 50.2 L215.8 50.4 L215.0 50.6 L214.1 50.8 L213.2 51.0 L212.2 51.2 L211.3 51.5 L210.4 51.7 L209.4 52.0 L208.4 52.2 L207.4 52.5 L206.5 52.8 L205.5 53.0 L204.4 53.3 L203.4 53.6 L202.4 53.8 L201.4 54.1 L200.3 54.4 L199.3 54.6 L198.3 54.9 L197.2 55.1 L196.1 55.3 L195.1 55.6 L193.9 55.8 L192.8 56.1 L191.6 56.3 L190.4 56.6 L189.2 56.9 L188.0 57.2 L186.9 57.5 L185.7 57.7 L184.5 58.0 L183.3 58.3 L182.2 58.5 L181.0 58.7 L179.8 58.9 L178.7 59.1 L177.6 59.3 L176.5 59.4 L175.4 59.5 L174.3 59.5 L173.2 59.6 L172.2 59.5 L171.2 59.5 L170.1 59.4 L169.1 59.2 L168.0 59.1 L166.9 58.8 L165.8 58.6 L164.7 58.3 L163.6 58.0 L162.4 57.7 L161.3 57.4 L160.1 57.0 L158.9 56.6 L157.7 56.3 L156.5 55.9 L155.3 55.5 L154.1 55.1 L152.8 54.8 L151.5 54.4 L150.3 54.1 L149.0 53.8 L147.8 53.5 L146.7 53.3 L145.5 53.0 L144.3 52.7 L143.2 52.3 L142.0 52.0 L140.8 51.7 L139.5 51.3 L138.3 51.0 L137.1 50.7 L135.8 50.4 L134.5 50.1 L133.2 49.8 L132.0 49.6 L130.6 49.4 L129.3 49.2 L128.0 49.1 L126.6 49.0 L125.3 48.9 L123.9 49.0 L122.5 49.0 L121.2 49.2 L119.8 49.4 L118.5 49.6 L117.2 49.9 L115.9 50.2 L114.6 50.5 L113.3 50.9 L112.1 51.3 L110.8 51.7 L109.6 52.1 L108.4 52.5 L107.2 52.9 L106.0 53.3 L104.9 53.7 L103.7 54.1 L102.5 54.4 L101.4 54.8 L100.3 55.1 L99.1 55.4 L97.9 55.7 L96.7 56.0 L95.5 56.4 L94.2 56.7 L93.0 57.1 L91.8 57.4 L90.6 57.8 L89.5 58.1 L88.3 58.5 L87.1 58.8 L86.0 59.1 L84.8 59.4 L83.7 59.6 L82.6 59.9 L81.5 60.1 L80.3 60.3 L79.2 60.4 L78.2 60.6 L77.1 60.6 L76.0 60.7 L74.9 60.7 L73.8 60.6 L72.7 60.6 L71.6 60.4 L70.5 60.3 L69.3 60.1 L68.2 59.9 L67.0 59.7 L65.8 59.4 L64.6 59.1 L63.5 58.8 L62.3 58.5 L61.1 58.2 L59.9 57.9 L58.6 57.6 L57.4 57.3 L56.2 57.0 L55.0 56.7 L53.8 56.5 L52.6 56.2 L51.5 56.0 L50.4 55.7 L49.3 55.5 L48.2 55.2 L47.1 54.9 L46.0 54.6 L44.9 54.3 L43.8 54.0 L42.7 53.7 L41.6 53.4 L40.5 53.1 L39.3 52.8 L38.2 52.5 L37.1 52.3 L35.9 52.1 L34.7 51.9 L33.6 51.8 L32.4 51.7 L31.2 51.6 L30.0 51.6 L28.8 51.7 L27.6 51.8 L26.4 52.0 L25.2 52.2 L24.0 52.4 L22.9 52.7 L21.7 53.0 L20.6 53.3 L19.4 53.6 L18.3 54.0 L17.2 54.3 L16.1 54.7 L15.0 55.1 L13.9 55.4 L12.8 55.8 L11.7 56.1 L10.7 56.4 L9.7 56.7 L8.7 57.0 L7.6 57.2 L6.6 57.4 L5.5 57.7 L4.5 57.9 L3.5 58.2 L2.4 58.4 L1.4 58.7 L0.4 58.9 L-0.6 59.2 L-1.6 59.4 L-2.5 59.6 L-3.5 59.8 L-4.5 60.0 L-5.4 60.2 L-6.4 60.4 L-7.3 60.5 L-8.3 60.6 L-9.2 60.7 L-10.1 60.7 L-11.0 60.7 L-11.9 60.7 L-12.8 60.6 L-13.7 60.5 L-14.6 60.4 L-15.6 60.3 L-16.5 60.1 L-17.4 59.9 L-18.3 59.7 L-19.2 59.5 L-20.1 59.2 L-21.0 58.9 L-21.9 58.6 L-22.8 58.3 L-23.7 58.0 L-24.6 57.6 L-25.4 57.3 L-26.3 56.9 L-27.1 56.5 L-28.0 56.1 L-28.8 55.7 L-29.6 55.3 L-30.4 54.8 L-31.2 54.3 L-32.0 53.8 L-32.8 53.2 L-33.7 52.6 L-34.5 51.9 L-35.3 51.3 L-36.1 50.6 L-36.9 49.9 L-37.7 49.2 L-38.5 48.5 L-39.2 47.8 L-39.9 47.2 L-40.6 46.5 L-41.2 45.9 L-41.8 45.4 L-42.4 44.9 L-42.9 44.4 L-43.3 44.0 L-43.7 43.7Z" fill="#26241f" stroke="#f2ece0" stroke-width="1.8" stroke-linejoin="round" paint-order="stroke"/><path d="M42.0 56.2 L43.1 56.5 L44.2 56.9 L45.3 57.2 L46.4 57.5 L47.5 57.8 L48.6 58.2 L49.7 58.5 L50.9 58.7 L52.0 59.0 L53.2 59.3 L54.3 59.5 L55.5 59.8 L56.7 60.2 L57.9 60.5 L59.1 60.8 L60.3 61.1 L61.5 61.5 L62.7 61.8 L63.9 62.1 L65.1 62.4 L66.3 62.7 L67.5 63.0 L68.7 63.2 L70.0 63.5 L71.2 63.6 L72.4 63.8 L73.6 63.9 L74.8 64.0 L76.0 64.0 L77.2 64.0 L78.4 63.9 L79.6 63.8 L80.8 63.7 L82.0 63.5 L83.2 63.3 L84.4 63.0 L85.6 62.8 L86.8 62.5 L88.0 62.2 L89.2 61.9 L90.4 61.6 L91.6 61.2 L92.8 60.9 L94.0 60.6 L95.2 60.2 L96.4 59.9 L97.6 59.6 L98.8 59.3 L100.0 59.0 L101.2 58.7 L102.4 58.4 L103.6 58.0 L104.8 57.7 L106.0 57.3 L107.2 56.9 L108.4 56.5 L109.6 56.1 L110.8 55.8 L112.0 55.4 L113.2 55.0 L114.4 54.7 L115.6 54.3 L116.8 54.0 L118.0 53.8 L119.2 53.5 L120.4 53.3 L121.6 53.2 L122.8 53.1 L124.0 53.0 L125.2 53.0 L126.4 53.0 L127.6 53.1 L128.8 53.3 L130.0 53.5 L131.2 53.7 L132.4 53.9 L133.6 54.2 L134.8 54.4 L136.0 54.8 L137.2 55.1 L138.4 55.4 L139.6 55.7 L140.8 56.1 L142.0 56.4 L143.2 56.8 L144.4 57.1 L145.6 57.4 L146.8 57.7 L148.0 58.0 L149.2 58.3 L150.4 58.6 L151.6 58.9 L152.8 59.3 L154.0 59.7 L155.2 60.0 L156.4 60.4 L157.6 60.8 L158.8 61.2 L160.0 61.6 L161.2 61.9 L162.4 62.3 L163.6 62.6 L164.8 62.9 L166.0 63.2 L167.2 63.4 L168.4 63.6 L169.6 63.8 L170.8 63.9 L172.0 64.0 L173.2 64.0 L174.4 64.0 L175.6 64.0 L176.9 63.9 L178.1 63.7 L179.3 63.6 L180.6 63.4 L181.8 63.2 L183.0 62.9 L184.2 62.7 L185.5 62.4 L186.7 62.2 L187.9 61.9 L189.1 61.6 L190.3 61.3 L191.5 61.0 L192.6 60.7 L193.8 60.5 L194.9 60.2 L196.0 60.0 L197.1 59.8 L198.2 59.5 L199.3 59.3 L200.4 59.0 L201.4 58.8 L202.5 58.5 L203.5 58.2 L204.6 58.0 L205.6 57.7 L206.6 57.4 L207.6 57.2 L208.6 56.9 L209.6 56.6 L210.6 56.4 L211.5 56.1 L212.4 55.9 L213.4 55.7 L214.3 55.4 L215.1 55.2 L216.0 55.0 L216.9 54.8 L217.7 54.6 L218.6 54.4 L219.4 54.2 L220.2 54.0 L221.1 53.9 L221.9 53.7 L222.7 53.5 L223.5 53.3 L224.2 53.2 L225.0 53.0 L225.7 52.9" fill="none" stroke="#f2ece0" stroke-opacity=".25" stroke-width="1.1" stroke-linecap="round"/><path d="M-44.0 44.0 q-6 -2 -8 -10" fill="none" stroke="#26241f" stroke-width="1.3" stroke-linecap="round"/><g transform="translate(234.0 53.0) rotate(-14.0) scale(1.15)">
+<path d="M-4 -6 C-11 -9 -18 -8 -24 -3" stroke="#b8362b" stroke-width="2" fill="none" stroke-linecap="round"/>
+<path d="M-4 -3 C-12 -3 -19 2 -25 8" stroke="#b8362b" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+<path d="M-4 -8 C-7 -15 -13 -19 -21 -18 M-10 -15 C-11 -20 -16 -23 -21 -22" stroke="#26241f" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+<path d="M1 -8 C0 -14 -2 -19 -7 -22" stroke="#26241f" stroke-width="2" fill="none" stroke-linecap="round"/>
+<path d="M-9 1 C-9 -7 0 -10 9 -8 C15 -7 21 -8 27 -13 C28 -7 25 -2 19 0 C14 2 10 3 6 7 C0 10 -8 8 -9 1Z" fill="#26241f" stroke="#f2ece0" stroke-width="1.4" paint-order="stroke" stroke-linejoin="round"/>
+<path d="M12 1 C16 1 21 -1 25 -4" stroke="#f2ece0" stroke-opacity=".55" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+<ellipse cx="6" cy="-3.2" rx="3.2" ry="2" fill="#f2ece0" transform="rotate(-18 6 -3.2)"/><circle cx="6.4" cy="-3.2" r="1.5" fill="#b8362b"/>
+<path d="M18 2 C14 9 6 13 -3 12" stroke="#26241f" stroke-opacity=".75" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+</g></svg>
+      <h1><span data-i18n-zh="title"></span><small data-i18n-sm="title"></small></h1></div>
       <div class="lbl" data-i18n="chooseTheme"></div>
       <div class="themes" id="themeGrid"></div>
       <div class="note" id="modeNote" hidden></div>
@@ -142,7 +173,7 @@ a.btn{text-decoration:none}
       <input class="namebox" id="nameInp" maxlength="16">
       <button class="btn" id="startBtn" data-i18n="start"></button>
       <a class="btn ghost" id="teacherLink" href="https://wangchiapin.github.io/profesor/#/home" data-i18n="teacher"></a>
-      <div class="ver" style="margin-top:14px">v1-11</div>
+      <div class="ver" style="margin-top:14px">v1-12</div>
       <div class="copy">© 2026 @cadadiaunosminutos_ben_chino ｜ 保留所有權利 / Todos los derechos reservados</div>
     </div>
   </div>
@@ -174,6 +205,12 @@ a.btn{text-decoration:none}
       <button class="btn ghost" id="pauseSetBtn" data-i18n="settings"></button>
       <button class="btn ghost" id="pauseMenuBtn" data-i18n="toMenu"></button>
     </div>
+  </div>
+
+
+  <!-- 說明 -->
+  <div class="screen dlgBg" id="infoScr" hidden>
+    <div class="card" id="infoCard"></div>
   </div>
 
   <!-- 設定 -->
@@ -273,6 +310,15 @@ const I18N = {
   title:['墨龍飛天','墨龙飞天','El dragón de tinta','Ink Dragon'],
   subtitle:['往上飛，只吃主題裡的字。吃錯的字，龍會受傷。','往上飞，只吃主题里的字。吃错的字，龙会受伤。',
     'Vuela hacia arriba y come solo las palabras del tema. Las equivocadas hieren al dragón.','Fly upward and eat only the words of the theme. Wrong words hurt the dragon.'],
+  info:['說明','说明','Ayuda','Help'],
+  howTo:['怎麼玩','怎么玩','Cómo jugar','How to play'],
+  help1:['手機用手指在畫面上拖動，龍就跟著移動。電腦可以用方向鍵、WASD 或滑鼠拖動。','手机用手指在画面上拖动，龙就跟着移动。电脑可以用方向键、WASD 或滑鼠拖动。','En el móvil, arrastra el dedo por la pantalla. En computadora: flechas, WASD o arrastra con el ratón.','On a phone, drag your finger on the screen. On a computer: arrow keys, WASD or drag with the mouse.'],
+  help2:['先選一個主題，只吃那個主題裡的字。','先选一个主题，只吃那个主题里的字。','Elige un tema y come solo las palabras de ese tema.','Pick a theme and eat only the words of that theme.'],
+  help3:['吃對加分，連續吃對 5 個，分數加倍。吃到別的主題的字，扣一顆愛心；三顆愛心用完，遊戲就結束。','吃对加分，连续吃对 5 个，分数加倍。吃到别的主题的字，扣一颗爱心；三颗爱心用完，游戏就结束。','Cada acierto suma puntos; con 5 seguidos, los puntos se duplican. Una palabra de otro tema te quita un corazón; sin corazones, se acaba el juego.','Correct words score points; 5 in a row doubles them. A word from another theme costs a heart; with no hearts left, the game ends.'],
+  help4:['每吃對 8 個字，龍就飛得更高、更快。','每吃对 8 个字，龙就飞得更高、更快。','Cada 8 aciertos, el dragón vuela más alto y más rápido.','Every 8 correct words, the dragon flies higher and faster.'],
+  help5:['越飛越高，相近主題的字會混進來（例如食物裡混進水果），要看清楚。','越飞越高，相近主题的字会混进来（例如食物里混进水果），要看清楚。','Cuanto más alto, se mezclan palabras de temas parecidos (por ejemplo, frutas entre la comida). ¡Mira bien!','The higher you go, words from similar themes mix in (for example, fruit among food). Look carefully!'],
+  help6:['畫面左右是相連的：從左邊飛出去，會從右邊出現。','画面左右是相连的：从左边飞出去，会从右边出现。','Los lados de la pantalla están unidos: si sales por la izquierda, apareces por la derecha.','The left and right edges are connected: fly out on the left and you come back on the right.'],
+  help7:['結束後有複習清單，列出吃錯和漏掉的字。','结束后有复习清单，列出吃错和漏掉的字。','Al terminar verás una lista para repasar con las palabras que fallaste o se te pasaron.','At the end you get a review list of the words you got wrong or missed.'],
   chooseTheme:['選一個主題','选一个主题','Elige un tema','Pick a theme'],
   name:['你的名字','你的名字','Tu nombre','Your name'],
   start:['開始飛','开始飞','Empezar','Start'],
@@ -1816,6 +1862,17 @@ $('pauseSetBtn').addEventListener('click', openSettings);
 $('pauseMenuBtn').addEventListener('click', ()=>{ $('pauseScr').hidden = true; toMenu(); });
 document.querySelectorAll('#gMusic .opt').forEach(b=>b.addEventListener('click', ()=>{ ensureAudio(); setMusic(b.dataset.v === 'on'); }));
 $('menuGear').addEventListener('click', openSettings);
+function openInfo(){
+  const li=k=>{const [z,m]=pair(k);return '<li>'+z+(m?'<small>'+m+'</small>':'')+'</li>';};
+  const [iz,im]=pair('info'),[hz,hm]=pair('howTo'),[dz,dm]=pair('done');
+  $('infoCard').innerHTML='<h2>ⓘ '+iz+(im?'<small>'+im+'</small>':'')+'</h2><h4>'+hz+(hm?'<small>'+hm+'</small>':'')+'</h4><ol>'+[1,2,3,4,5,6,7].map(n=>li('help'+n)).join('')+'</ol><button class="btn" id="infoDone"><span class="zh">'+dz+'</span>'+(dm?'<small>'+dm+'</small>':'')+'</button>';
+  $('infoDone').addEventListener('click',closeInfo);
+  $('infoScr').hidden=false; $('infoScr').scrollTop=0;
+}
+function closeInfo(){ $('infoScr').hidden=true; }
+$('menuInfo').addEventListener('click', openInfo);
+$('infoScr').addEventListener('click', e=>{ if(e.target===$('infoScr')) closeInfo(); });
+
 $('dlgDone').addEventListener('click', closeSettings);
 $('startBtn').addEventListener('click', ()=>{
   if(MAINT || !linkReady) return;
@@ -1857,7 +1914,8 @@ window.addEventListener('keydown', e=>{
   if(e.target && e.target.tagName === 'INPUT') return;
   if(keyDir(e,true)) e.preventDefault();
   if(e.key === 'Escape' && state === 'play'){
-    if(!$('dlg').hidden) closeSettings();
+    if(!$('infoScr').hidden) closeInfo();
+    else if(!$('dlg').hidden) closeSettings();
     else if(!$('pauseScr').hidden) resumeGame();
     else pauseGame();
   }
