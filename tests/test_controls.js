@@ -177,25 +177,34 @@ async function chase(page, want, stop, ms = 25000){
     await page.click('#gear');
     ok(await page.$eval('#gMusic .opt[data-v="off"]', e => e.classList.contains('on')), '設定視窗顯示背景音樂「關」');
     await ctx.close(); }
+  const gainOf = page => page.evaluate(() => new (window.AudioContext || window.webkitAudioContext)().destination.gain.value);
+  console.log('\n[C4b] 靜音（⚙️ 設定裡「音樂與音效」開／關）：總音量歸零、記住、不影響遊戲');
   { const { page, ctx } = await T.open(browser);
-    const mute = async () => page.$eval('#hgMute', e => ({ txt: e.textContent, pressed: e.getAttribute('aria-pressed'), ls: localStorage.getItem('hg.mute.dragon') }));
+    const mute = async () => page.evaluate(() => ({ ls: localStorage.getItem('hg.mute.dragon'), off: document.querySelector('#gSound .opt[data-v="off"]').classList.contains('on') }));
     const gain = () => page.evaluate(() => new (window.AudioContext || window.webkitAudioContext)().destination.gain.value);
+    ok(!(await page.$('#hgMute')), '畫面上不再有浮動的 🔊 鈕');
+    await page.click('#menuGear');
+    ok(await page.$eval('#gSound .opt[data-v="on"]', e => e.classList.contains('on')) && await gain() === 1, '設定裡「音樂與音效」預設是開、總音量 1');
+    ok(await page.$eval('#gMusic', e => !!e) && await page.$eval('#gMusic .opt[data-v="on"]', e => e.classList.contains('on')), '背景音樂那列還在，預設開');
+    await page.click('#gSound .opt[data-v="off"]');
     let m = await mute();
-    ok(m.txt === '🔊' && m.pressed === 'false' && await gain() === 1, '靜音鈕預設：🔊、總音量 1', m);
-    await page.click('#hgMute');
-    m = await mute();
-    ok(m.txt === '🔇' && m.pressed === 'true' && m.ls === '1' && await gain() === 0, '按靜音：🔇、記成 1、總音量變 0', m);
-    ok((await T.st(page)).state === 'menu', '按靜音鈕不會誤觸開始遊戲');
+    ok(m.off && m.ls === '1' && await gain() === 0, '選「關」：選項變關、記成 1、總音量變 0', m);
+    ok(await page.$eval('#gMusic .opt[data-v="on"]', e => e.classList.contains('on')), '關音樂與音效不會動到背景音樂那列');
+    await page.click('#dlgDone');
+    ok((await T.st(page)).state === 'menu', '設定裡切靜音不會誤觸開始遊戲');
     await T.startPlay(page, 'Mute');
-    await page.click('#hgMute');
-    ok((await mute()).txt === '🔊' && await gain() === 1 && !(await T.st(page)).paused, '遊戲中再按一次：取消靜音、總音量回 1、不會暫停遊戲');
-    await page.click('#hgMute');
+    await page.click('#gear');
+    await page.click('#gSound .opt[data-v="on"]');
+    await page.click('#dlgDone');
+    ok(!(await mute()).off && await gain() === 1 && !(await T.st(page)).paused, '遊戲中從 ⚙️ 取消靜音：總音量回 1、關掉設定後遊戲繼續');
+    await page.click('#gear'); await page.click('#gSound .opt[data-v="off"]'); await page.click('#dlgDone');
     await page.reload(); await page.waitForFunction(() => !!window.__dragon); await page.waitForTimeout(500);
+    await page.click('#menuGear');
     m = await mute();
-    ok(m.txt === '🔇' && m.pressed === 'true' && await gain() === 0, '重新整理後仍是靜音（🔇、總音量 0）', m);
+    ok(m.off && m.ls === '1' && await gain() === 0, '重新整理後仍是靜音（設定顯示關、總音量 0）', m);
     await ctx.close(); }
   { const { page, ctx } = await T.open(browser, { ls: { 'hg.mute.dragon': '1' } });
-    ok((await page.$eval('#hgMute', e => e.textContent)) === '🔇' && await page.evaluate(() => new AudioContext().destination.gain.value) === 0, '之前靜音過：一打開就是靜音');
+    ok(await gainOf(page) === 0, '之前靜音過：一打開就是靜音');
     await ctx.close(); }
 
   console.log('\n[C5] 真的吃字：吃對加分、吃錯扣命、三顆心用完自動結算');

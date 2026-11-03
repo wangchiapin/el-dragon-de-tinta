@@ -173,7 +173,7 @@ a.btn{text-decoration:none}
       <input class="namebox" id="nameInp" maxlength="16">
       <button class="btn" id="startBtn" data-i18n="start"></button>
       <a class="btn ghost" id="teacherLink" href="https://wangchiapin.github.io/profesor/#/home" data-i18n="teacher"></a>
-      <div class="ver" style="margin-top:14px">v1-12</div>
+      <div class="ver" style="margin-top:14px">v1-13</div>
       <div class="copy">© 2026 @cadadiaunosminutos_ben_chino ｜ 保留所有權利 / Todos los derechos reservados</div>
     </div>
   </div>
@@ -225,6 +225,8 @@ a.btn{text-decoration:none}
         <button class="opt" data-v="pinyin">拼音</button><button class="opt" data-v="zhuyin">注音</button><button class="opt" data-v="both" data-i18n-opt="both"></button><button class="opt" data-v="off" data-i18n-opt="off"></button></div></div>
       <div class="setrow"><div class="l" data-i18n="optMusic"></div><div class="row" id="gMusic">
         <button class="opt" data-v="on" data-i18n-opt="on"></button><button class="opt" data-v="off" data-i18n-opt="off"></button></div></div>
+      <div class="setrow"><div class="l" data-i18n="optSound"></div><div class="row" id="gSound">
+        <button class="opt" data-v="on" data-i18n-opt="on"></button><button class="opt" data-v="off" data-i18n-opt="off"></button></div></div>
       <button class="btn" id="dlgDone" data-i18n="done"></button>
     </div>
   </div>
@@ -234,7 +236,7 @@ a.btn{text-decoration:none}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
-/* ===== 一鍵靜音（關掉音樂和音效）— 每天一分鐘遊戲統一做法 ===== */
+/* ===== 靜音（關掉音樂和音效）— 開關放在 ⚙️ 設定裡 ===== */
 (function(){
   var KEY='hg.mute.dragon', MOUNT='', muted=false, masters=[];
   try{ muted = localStorage.getItem(KEY)==='1'; }catch(e){}
@@ -259,21 +261,11 @@ a.btn{text-decoration:none}
     HTMLMediaElement.prototype.play = function(){ this.muted = muted; return op.apply(this, arguments); };
   }catch(e){}
   function apply(){ masters.forEach(function(g){ try{ g.gain.setValueAtTime(muted?0:1, g.context.currentTime); }catch(e){ g.gain.value = muted?0:1; } }); }
-  function build(){
-    if(document.getElementById('hgMute')) return;
-    var st=document.createElement('style');
-    st.textContent='#hgMute{position:fixed;left:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:2147483000;width:40px;height:40px;border-radius:50%;border:1px solid rgba(0,0,0,.28);background:rgba(255,255,255,.88);color:#222;font-size:19px;line-height:1;padding:0;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.25);touch-action:manipulation;-webkit-tap-highlight-color:transparent}#hgMute:active{transform:scale(.94)}#hgMute.st{position:static;flex:0 0 40px;margin:0 0 0 8px}';
-    document.head.appendChild(st);
-    var b=document.createElement('button'); b.type='button'; b.id='hgMute';
-    function paint(){ b.textContent = muted?'🔇':'🔊'; b.setAttribute('aria-pressed', muted?'true':'false');
-      b.title = b.ariaLabel = muted ? '開啟音樂和音效 · Activar música y efectos' : '靜音（音樂和音效）· Silenciar música y efectos'; apply(); }
-    b.addEventListener('click',function(e){ e.stopPropagation(); muted=!muted; try{ localStorage.setItem(KEY, muted?'1':'0'); }catch(err){} paint(); });
-    b.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
-    paint();
-    var anchor = MOUNT && document.querySelector(MOUNT);
-    if(anchor && anchor.parentNode){ b.className='st'; anchor.parentNode.insertBefore(b, anchor.nextSibling); } else document.body.appendChild(b);
-  }
-  if(document.body) build(); else document.addEventListener('DOMContentLoaded', build);
+  /* 不再有浮在畫面上的 🔊 鈕：靜音改成 ⚙️ 設定裡的「音樂與音效」開關，用這個介面讀寫 */
+  window.HGMute = {
+    get: function(){ return muted; },
+    set: function(v){ muted = !!v; try{ localStorage.setItem(KEY, muted?'1':'0'); }catch(err){} apply(); }
+  };
 })();
 /* ===== /一鍵靜音 ===== */
 
@@ -353,6 +345,7 @@ const I18N = {
   pause:['暫停','暂停','Pausa','Paused'],
   resume:['繼續','继续','Continuar','Resume'],
   optMusic:['背景音樂','背景音乐','Música de fondo','Music'],
+  optSound:['音樂與音效','音乐与音效','Música y efectos','Music and sound effects'],
   maint:['維修中，請稍後再來','维修中，请稍后再来','En mantenimiento, vuelve más tarde','Under maintenance — please come back later'],
   linkBad:['這個連結已失效，請向老師確認','这个链接已失效，请向老师确认','Este enlace ya no es válido; pregunta a tu profesor','This link is no longer valid — please ask your teacher'],
   linkOff:['暫時連不上，請稍後再試','暂时连不上，请稍后再试','No se pudo conectar; inténtalo más tarde','Could not connect — please try again later'],
@@ -1828,7 +1821,7 @@ function applyLang(){
   document.title = tz;
 }
 function markGroup(id, val){ document.querySelectorAll('#'+id+' .opt').forEach(b=>b.classList.toggle('on', b.dataset.v === val)); }
-function syncSettingsUI(){ markGroup('gScript',S.script); markGroup('gLang',S.lang); markGroup('gPhon',S.phon); markGroup('gMusic', musicOn ? 'on' : 'off'); $('musicBtn').classList.toggle('off', !musicOn); }
+function syncSettingsUI(){ markGroup('gScript',S.script); markGroup('gLang',S.lang); markGroup('gPhon',S.phon); markGroup('gMusic', musicOn ? 'on' : 'off'); markGroup('gSound', window.HGMute && HGMute.get() ? 'off' : 'on'); $('musicBtn').classList.toggle('off', !musicOn); }
 [['gScript','script'],['gLang','lang'],['gPhon','phon']].forEach(([id,k])=>{
   document.querySelectorAll('#'+id+' .opt').forEach(b=>b.addEventListener('click', ()=>{
     S[k] = b.dataset.v; writeSettings(S); syncSettingsUI(); applyLang();
@@ -1860,6 +1853,7 @@ $('musicBtn').addEventListener('click', ()=>{ ensureAudio(); setMusic(!musicOn);
 $('resumeBtn').addEventListener('click', resumeGame);
 $('pauseSetBtn').addEventListener('click', openSettings);
 $('pauseMenuBtn').addEventListener('click', ()=>{ $('pauseScr').hidden = true; toMenu(); });
+document.querySelectorAll('#gSound .opt').forEach(b=>b.addEventListener('click', ()=>{ if(window.HGMute) HGMute.set(b.dataset.v === 'off'); syncSettingsUI(); }));
 document.querySelectorAll('#gMusic .opt').forEach(b=>b.addEventListener('click', ()=>{ ensureAudio(); setMusic(b.dataset.v === 'on'); }));
 $('menuGear').addEventListener('click', openSettings);
 function openInfo(){
