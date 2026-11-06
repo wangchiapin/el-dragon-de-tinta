@@ -175,7 +175,7 @@ a.btn{text-decoration:none}
       <input class="namebox" id="nameInp" maxlength="16">
       <button class="btn" id="startBtn" data-i18n="start"></button>
       <a class="btn ghost" id="teacherLink" href="https://wangchiapin.github.io/profesor/#/home" data-i18n="teacher"></a>
-      <div class="ver" style="margin-top:14px">v1-14</div>
+      <div class="ver" style="margin-top:14px">v1-15</div>
       <div class="copy">© 2026 @cadadiaunosminutos_ben_chino ｜ 保留所有權利 / Todos los derechos reservados</div>
     </div>
   </div>
@@ -195,6 +195,7 @@ a.btn{text-decoration:none}
       </div>
       <div id="lbBox" hidden></div>
       <button class="btn" id="againBtn" data-i18n="again"></button>
+      <button class="btn ghost" id="shareBtn" data-i18n="share" hidden></button>
       <button class="btn ghost" id="toMenuBtn" data-i18n="toMenu"></button>
     </div>
   </div>
@@ -334,6 +335,9 @@ const I18N = {
   score:['得分','得分','Puntos','Score'],
   again:['再飛一次','再飞一次','Volar otra vez','Fly again'],
   toMenu:['主選單','主选单','Menú principal','Main menu'],
+  share:['分享成績','分享成绩','Compartir resultado','Share score'],
+  shareCopied:['已複製，貼到聊天室吧','已复制，贴到聊天室吧','Copiado: pégalo en tu chat','Copied — paste it into a chat'],
+  shareFail:['無法分享，請自行複製網址','无法分享，请自行复制网址','No se pudo compartir; copia el enlace','Could not share — copy the link yourself'],
   leaveMsg:['回到主選單，這一局會結束，分數不會保留。要離開嗎？','回到主选单，这一局会结束，分数不会保留。要离开吗？','Si vuelves al menú principal, esta partida termina y no se guarda el puntaje. ¿Quieres salir?','If you go back to the main menu, this round ends and your score is not saved. Leave?'],
   stay:['繼續玩','继续玩','Seguir jugando','Keep playing'],
   leave:['離開','离开','Salir','Leave'],
@@ -1378,6 +1382,7 @@ function endGame(){
     $('resRec').hidden = !rec; $('resRec').innerHTML = rec ? pair('newRec')[0] : '';
     const ck = correct<=0?'c0':correct<10?'c1':correct<25?'c2':correct<50?'c3':'c4';
     fill($('resCmt'), ck);
+    clearTimeout(shareTimer); fill($('shareBtn'), 'share'); $('shareBtn').hidden = score <= 0;   // 0 分不用分享
     $('lbBox').hidden = !((pubBoard() || CLASS_MODE) && !QSD.has('preview'));   // ?preview（老師預覽）不記成績、不顯示榜單
     renderReview();
   }, 600);
@@ -1392,6 +1397,43 @@ function endGame(){
       try{ await renderBoard(th); }catch(e){}
     })();
   }
+}
+/* 分享成績：手機用系統分享選單，不支援就複製「一句話＋連結」。
+   連結一律是公開頁（不帶班級碼等參數），後面的 ?ref=share 是「從分享進來」的記號。 */
+const SHARE_URL = 'https://wangchiapin.github.io/el-dragon-de-tinta/?ref=share';
+const SHARE_TITLE = '墨龍飛天 · El dragón de tinta';
+function shareMessage(){
+  const t = curTheme().name, nick = ($('nameInp').value||'').trim();
+  if(S.lang === 'es') return '¡' + (nick ? 'Soy ' + nick + ' y saqué' : 'Saqué') + ' ' + score + ' puntos en 墨龍飛天 (tema: ' + String(t[2]).toLowerCase() + ')! ¿Puedes superarme?';
+  if(S.lang === 'en') return (nick ? 'I’m ' + nick + ' and I scored' : 'I scored') + ' ' + score + ' in 墨龍飛天 (theme: ' + String(t[3]).toLowerCase() + ')! Can you beat me?';
+  const simp = S.script === 'simp', game = pair('title')[0], th = simp ? t[1] : t[0];
+  return (nick ? '我是' + nick + '，在' : '我在') + game + '（' + (simp ? '主题' : '主題') + '：' + th + '）拿到 ' + score + ' 分！' + (simp ? '你能超过我吗？' : '你能超過我嗎？');
+}
+async function copyText(s){
+  try{ if(navigator.clipboard && navigator.clipboard.writeText){ await navigator.clipboard.writeText(s); return true; } }catch(e){}
+  try{
+    const ta = document.createElement('textarea'); ta.value = s; ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    const r = document.execCommand('copy'); ta.remove(); return !!r;
+  }catch(e){ return false; }
+}
+let shareBusy = false, shareTimer = 0;
+function flashShare(key){
+  fill($('shareBtn'), key);
+  clearTimeout(shareTimer); shareTimer = setTimeout(()=>fill($('shareBtn'), 'share'), 2200);
+}
+async function doShare(){
+  if(shareBusy) return;
+  shareBusy = true;
+  try{
+    const text = shareMessage();
+    if(navigator.share){
+      try{ await navigator.share({ title: SHARE_TITLE, text, url: SHARE_URL }); return; }
+      catch(e){ if(e && e.name === 'AbortError') return; }   // 玩家自己關掉分享選單：什麼都不做；其他錯誤改走複製
+    }
+    flashShare(await copyText(text + '\n' + SHARE_URL) ? 'shareCopied' : 'shareFail');
+  }finally{ shareBusy = false; }
 }
 function renderReview(){
   const rows = [];
@@ -1892,6 +1934,7 @@ $('startBtn').addEventListener('click', ()=>{
   startGame();
 });
 $('againBtn').addEventListener('click', startGame);
+$('shareBtn').addEventListener('click', doShare);
 $('toMenuBtn').addEventListener('click', toMenu);
 try{ $('nameInp').value = localStorage.getItem('dragonInk.name') || ''; }catch(e){}
 $('nameInp').placeholder = '玩家';
