@@ -85,7 +85,7 @@ async function playAndCheck(page, id, label){
       await page.click('#startBtn'); await page.waitForFunction(() => window.__dragon.state.state === 'play');
       const chip = await T.txt(page, '#themeChip');
       if(!(now[i].on && now.filter(n => n.on).length === 1 && chip.includes(byId(ids[i]).name[0]))){ allOk = false; bad.push([i, chip]); }
-      await page.click('#pauseBtn'); await page.click('#pauseMenuBtn');
+      await page.click('#pauseBtn'); await page.click('#pauseMenuBtn'); await page.click('#leaveBtn');
     }
     ok(allOk, '逐一點 7 個主題並開始：選中狀態與遊戲中的「只吃：…」標籤都對', bad);
     await ctx.close(); }

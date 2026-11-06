@@ -50,8 +50,10 @@ async function chase(page, want, stop, ms = 25000){
     await page.keyboard.press('Escape');
     ok((await T.st(page)).paused === false && !(await T.visible(page, '#pauseScr')), '再按 Esc：繼續');
     // 暫停 → 設定 → Esc 關設定 → 仍在暫停
-    await page.click('#pauseBtn'); await page.click('#pauseSetBtn');
-    ok(await T.visible(page, '#dlg') && (await T.st(page)).paused, '暫停畫面可以開設定，遊戲仍暫停');
+    await page.click('#pauseBtn');
+    ok(await page.$('#pauseSetBtn') === null, '暫停畫面沒有「基本設定」鈕');
+    await page.evaluate(() => document.getElementById('gear').click());
+    ok(await T.visible(page, '#dlg') && (await T.st(page)).paused, '暫停時開設定，遊戲仍暫停');
     await page.keyboard.press('Escape');
     ok(!(await T.visible(page, '#dlg')) && await T.visible(page, '#pauseScr') && (await T.st(page)).paused, 'Esc 關掉設定後回到暫停畫面（不會直接開始跑）');
     await page.keyboard.press('Escape');
@@ -69,6 +71,12 @@ async function chase(page, want, stop, ms = 25000){
     await page.evaluate(() => { Object.defineProperty(document, 'hidden', { configurable: true, get: () => false }); });
     // 暫停 → 回主選單
     await page.click('#pauseMenuBtn');
+    ok(await T.visible(page, '#leaveScr') && !(await T.visible(page, '#pauseScr')) && (await T.st(page)).state === 'play' && (await T.st(page)).paused, '暫停裡按「主選單」：先跳出離開確認（暫停畫面先收起來），遊戲還沒結束');
+    await page.click('#stayBtn');
+    ok(!(await T.visible(page, '#leaveScr')) && await T.visible(page, '#pauseScr') && (await T.st(page)).state === 'play', '按「繼續玩」：確認視窗關掉、回到暫停畫面');
+    await page.click('#pauseMenuBtn'); await page.keyboard.press('Escape');
+    ok(!(await T.visible(page, '#leaveScr')) && await T.visible(page, '#pauseScr'), '確認視窗按 Esc：回到暫停畫面');
+    await page.click('#pauseMenuBtn'); await page.click('#leaveBtn');
     const s = await T.st(page);
     ok(s.state === 'menu' && !s.paused && await T.visible(page, '#menu') && !(await T.visible(page, '#hud')) && !(await T.visible(page, '#pauseScr')), '暫停裡按「主選單」：回到主選單、HUD 和暫停畫面都收起來');
     await page.keyboard.press('Escape');
@@ -162,7 +170,7 @@ async function chase(page, want, stop, ms = 25000){
     const m3 = await page.evaluate(() => window.__dragon.musicStep); await page.waitForTimeout(800);
     ok(await page.evaluate(() => window.__dragon.musicStep) === m3, '暫停中：音樂停止', m3);
     // 設定裡的背景音樂
-    await page.click('#pauseSetBtn');
+    await page.evaluate(() => document.getElementById('gear').click());
     ok(await page.$eval('#gMusic .opt[data-v="on"]', e => e.classList.contains('on')), '設定視窗：背景音樂「開」被選中');
     await page.click('#gMusic .opt[data-v="off"]');
     ok(await page.$eval('#gMusic .opt[data-v="off"]', e => e.classList.contains('on')) && await page.$eval('#musicBtn', e => e.classList.contains('off')) && await page.evaluate(() => localStorage.getItem('dragonInk.music')) === '0', '設定裡選「關」：♪ 鈕同步變灰、記成 0');

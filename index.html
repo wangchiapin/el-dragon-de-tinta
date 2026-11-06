@@ -27,8 +27,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 #themeChip{position:absolute;left:50%;transform:translateX(-50%);top:calc(58px + env(safe-area-inset-top));text-align:center;background:rgba(242,236,224,.9);border:1px solid var(--ink3);border-radius:999px;padding:4px 16px;font-size:14px;white-space:nowrap;max-width:60vw}
 #themeChip small{display:block;font-size:10px;color:var(--ink2)}
 #rightBox{display:flex;align-items:center;gap:8px}
-#hearts{position:absolute;right:16px;top:calc(62px + env(safe-area-inset-top));font-size:20px;line-height:1;color:var(--red);letter-spacing:3px}
-#hearts .off{color:var(--ink3);opacity:.55}
+#hearts{position:absolute;right:16px;top:calc(62px + env(safe-area-inset-top));display:flex;gap:5px;line-height:0}
+#hearts svg{width:22px;height:22px;display:block}
+#hearts .off{opacity:.9}
 .hb{pointer-events:auto!important;width:38px;height:38px;border-radius:50%;border:1px solid var(--ink3);background:rgba(242,236,224,.85);font:inherit;font-size:17px;line-height:1;color:var(--ink);display:grid;place-items:center;cursor:pointer;padding:0}
 #gear{font-size:19px}
 .gearSvg{width:25px;height:25px;display:block}
@@ -52,6 +53,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 h1{margin:0;font-family:var(--kai);font-size:46px;letter-spacing:8px;font-weight:700;line-height:1.1}
 h1 small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2px;color:var(--ink2);font-weight:400;margin-top:6px}
 #pauseScr .card>div:first-child small{display:block;font-family:var(--serif);font-size:13px;letter-spacing:2px;color:var(--ink2);margin-top:4px}
+#leaveScr .sub{text-wrap:balance}
 .sub{font-size:14px;line-height:1.7;margin:14px 0 4px;color:var(--ink)}
 .sub small{display:block;font-size:11.5px;line-height:1.55;color:var(--ink2);margin-top:3px}
 .lbl{font-size:14px;margin:16px 0 8px}
@@ -173,7 +175,7 @@ a.btn{text-decoration:none}
       <input class="namebox" id="nameInp" maxlength="16">
       <button class="btn" id="startBtn" data-i18n="start"></button>
       <a class="btn ghost" id="teacherLink" href="https://wangchiapin.github.io/profesor/#/home" data-i18n="teacher"></a>
-      <div class="ver" style="margin-top:14px">v1-13</div>
+      <div class="ver" style="margin-top:14px">v1-14</div>
       <div class="copy">© 2026 @cadadiaunosminutos_ben_chino ｜ 保留所有權利 / Todos los derechos reservados</div>
     </div>
   </div>
@@ -202,11 +204,19 @@ a.btn{text-decoration:none}
     <div class="card">
       <div style="font-size:26px;letter-spacing:6px;font-family:var(--kai)" data-i18n="pause"></div>
       <button class="btn" id="resumeBtn" data-i18n="resume"></button>
-      <button class="btn ghost" id="pauseSetBtn" data-i18n="settings"></button>
       <button class="btn ghost" id="pauseMenuBtn" data-i18n="toMenu"></button>
     </div>
   </div>
 
+
+  <!-- 離開確認 -->
+  <div class="screen dlgBg" id="leaveScr" hidden>
+    <div class="card">
+      <div class="sub" data-i18n="leaveMsg"></div>
+      <button class="btn" id="stayBtn" data-i18n="stay"></button>
+      <button class="btn ghost" id="leaveBtn" data-i18n="leave"></button>
+    </div>
+  </div>
 
   <!-- 說明 -->
   <div class="screen dlgBg" id="infoScr" hidden>
@@ -313,7 +323,7 @@ const I18N = {
   help7:['結束後有複習清單，列出吃錯和漏掉的字。','结束后有复习清单，列出吃错和漏掉的字。','Al terminar verás una lista para repasar con las palabras que fallaste o se te pasaron.','At the end you get a review list of the words you got wrong or missed.'],
   chooseTheme:['選一個主題','选一个主题','Elige un tema','Pick a theme'],
   name:['你的名字','你的名字','Tu nombre','Your name'],
-  start:['開始飛','开始飞','Empezar','Start'],
+  start:['開始遊戲','开始游戏','Empezar','Start'],
   teacher:['老師管理中心','老师管理中心','Centro para profesores','Teacher center'],
   settings:['基本設定','基本设定','Ajustes','Settings'],
   dragHint:['👆 手指在畫面上拖動，龍就跟著移動。電腦：方向鍵、WASD 或滑鼠拖動。','👆 手指在画面上拖动，龙就跟着移动。电脑：方向键、WASD 或滑鼠拖动。',
@@ -324,6 +334,9 @@ const I18N = {
   score:['得分','得分','Puntos','Score'],
   again:['再飛一次','再飞一次','Volar otra vez','Fly again'],
   toMenu:['主選單','主选单','Menú principal','Main menu'],
+  leaveMsg:['回到主選單，這一局會結束，分數不會保留。要離開嗎？','回到主选单，这一局会结束，分数不会保留。要离开吗？','Si vuelves al menú principal, esta partida termina y no se guarda el puntaje. ¿Quieres salir?','If you go back to the main menu, this round ends and your score is not saved. Leave?'],
+  stay:['繼續玩','继续玩','Seguir jugando','Keep playing'],
+  leave:['離開','离开','Salir','Leave'],
   done:['完成','完成','Listo','Done'],
   best:['最高分','最高分','Récord','Best'],
   newRec:['新紀錄！','新纪录！','¡Nuevo récord!','New record!'],
@@ -1408,7 +1421,7 @@ function renderReview(){
   });
 }
 function toMenu(){
-  state = 'menu'; paused = false; $('pauseScr').hidden = true;
+  state = 'menu'; paused = false; $('pauseScr').hidden = true; $('leaveScr').hidden = true;
   $('res').hidden = true; $('hud').hidden = true; $('menu').hidden = false;
   items=[]; parts=[]; floats=[]; speed=70; initDragon();
 }
@@ -1769,8 +1782,10 @@ function render(){
    ===================================================================== */
 function renderHud(){
   $('scoreNum').textContent = score;
+  const full = '<svg viewBox="-16 -16 32 32" aria-hidden="true"><circle r="14" fill="#9a3b2f" stroke="#1c1b19" stroke-width="1.8"/><path d="M-7 3 Q-2 -7 3 -1 Q6 3 9 -3" fill="none" stroke="#e8c0b0" stroke-width="1.6" stroke-linecap="round"/><circle cx="-5" cy="-6" r="2.5" fill="#e8c0b0"/></svg>';
+  const empty = '<svg class="off" viewBox="-16 -16 32 32" aria-hidden="true"><circle r="14" fill="#d8d3c8" stroke="#a8a39a" stroke-width="1.6" stroke-dasharray="3 2.4"/></svg>';
   let h = '';
-  for(let i=0;i<MAX_HEARTS;i++) h += i < hearts ? '●' : '<span class="off">●</span>';
+  for(let i=0;i<MAX_HEARTS;i++) h += i < hearts ? full : empty;
   $('hearts').innerHTML = h;
 }
 function renderThemeChip(){
@@ -1851,8 +1866,10 @@ $('gear').addEventListener('click', openSettings);
 $('pauseBtn').addEventListener('click', pauseGame);
 $('musicBtn').addEventListener('click', ()=>{ ensureAudio(); setMusic(!musicOn); });
 $('resumeBtn').addEventListener('click', resumeGame);
-$('pauseSetBtn').addEventListener('click', openSettings);
-$('pauseMenuBtn').addEventListener('click', ()=>{ $('pauseScr').hidden = true; toMenu(); });
+function closeLeave(){ $('leaveScr').hidden = true; $('pauseScr').hidden = false; }
+$('pauseMenuBtn').addEventListener('click', ()=>{ $('pauseScr').hidden = true; $('leaveScr').hidden = false; });
+$('stayBtn').addEventListener('click', closeLeave);
+$('leaveBtn').addEventListener('click', ()=>{ $('leaveScr').hidden = true; $('pauseScr').hidden = true; toMenu(); });
 document.querySelectorAll('#gSound .opt').forEach(b=>b.addEventListener('click', ()=>{ if(window.HGMute) HGMute.set(b.dataset.v === 'off'); syncSettingsUI(); }));
 document.querySelectorAll('#gMusic .opt').forEach(b=>b.addEventListener('click', ()=>{ ensureAudio(); setMusic(b.dataset.v === 'on'); }));
 $('menuGear').addEventListener('click', openSettings);
@@ -1908,7 +1925,8 @@ window.addEventListener('keydown', e=>{
   if(e.target && e.target.tagName === 'INPUT') return;
   if(keyDir(e,true)) e.preventDefault();
   if(e.key === 'Escape' && state === 'play'){
-    if(!$('infoScr').hidden) closeInfo();
+    if(!$('leaveScr').hidden) closeLeave();
+    else if(!$('infoScr').hidden) closeInfo();
     else if(!$('dlg').hidden) closeSettings();
     else if(!$('pauseScr').hidden) resumeGame();
     else pauseGame();

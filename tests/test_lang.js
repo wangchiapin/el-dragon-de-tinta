@@ -7,13 +7,15 @@ const ALLW = THEMES.flatMap(t => t.words);
 // 標準答案（照 index.html 的 I18N 表，自己手寫，不是從網頁讀出來）
 const L = {
   title:   { trad: '墨龍飛天', simp: '墨龙飞天', es: 'El dragón de tinta', en: 'Ink Dragon' },
-  start:   { trad: '開始飛', simp: '开始飞', es: 'Empezar', en: 'Start' },
+  start:   { trad: '開始遊戲', simp: '开始游戏', es: 'Empezar', en: 'Start' },
   choose:  { trad: '選一個主題', simp: '选一个主题', es: 'Elige un tema', en: 'Pick a theme' },
   name:    { trad: '你的名字', simp: '你的名字', es: 'Tu nombre', en: 'Your name' },
   teacher: { trad: '老師管理中心', simp: '老师管理中心', es: 'Centro para profesores', en: 'Teacher center' },
   chip:    { trad: '只吃：', simp: '只吃：', es: 'Solo come: ', en: 'Only eat: ' },
   pause:   { trad: '暫停', simp: '暂停', es: 'Pausa', en: 'Paused' },
   resume:  { trad: '繼續', simp: '继续', es: 'Continuar', en: 'Resume' },
+  leave:   { trad: '離開', simp: '离开', es: 'Salir', en: 'Leave' },
+  stay:    { trad: '繼續玩', simp: '继续玩', es: 'Seguir jugando', en: 'Keep playing' },
   toMenu:  { trad: '主選單', simp: '主选单', es: 'Menú principal', en: 'Main menu' },
   score:   { trad: '得分', simp: '得分', es: 'Puntos', en: 'Score' },
   again:   { trad: '再飛一次', simp: '再飞一次', es: 'Volar otra vez', en: 'Fly again' },
@@ -65,6 +67,9 @@ const BOPOMOFO = /[ㄅ-ㄯ]/;
     ok(await T.txt(page, '#pauseScr .card > div:first-child') === two('pause', c.script, c.lang), tag + ' 暫停標題', await T.txt(page, '#pauseScr .card > div:first-child'));
     ok(await T.txt(page, '#resumeBtn') === two('resume', c.script, c.lang), tag + ' 繼續鈕', await T.txt(page, '#resumeBtn'));
     ok(await T.txt(page, '#pauseMenuBtn') === two('toMenu', c.script, c.lang), tag + ' 暫停裡的「主選單」鈕');
+    await page.click('#pauseMenuBtn');
+    ok(await T.txt(page, '#stayBtn') === two('stay', c.script, c.lang) && await T.txt(page, '#leaveBtn') === two('leave', c.script, c.lang), tag + ' 離開確認的兩個鈕', [await T.txt(page, '#stayBtn'), await T.txt(page, '#leaveBtn')]);
+    await page.click('#stayBtn');
     await page.click('#resumeBtn');
     // 等到有「漏掉」或「吃錯」的字
     await page.waitForFunction(() => { const r = window.__dragon.review; return r.miss.length + r.wrong.length > 0; }, null, { timeout: 12000 }).catch(() => {});
@@ -105,7 +110,7 @@ const BOPOMOFO = /[ㄅ-ㄯ]/;
   { const { page, ctx } = await T.open(browser, { ls: { [T.KEY]: JSON.stringify({ v: 1, script: 'trad', lang: 'es', phon: 'pinyin', rate: 'slow' }) } });
     await T.startPlay(page, 'Live');
     await page.click('#pauseBtn');
-    await page.click('#pauseSetBtn');
+    await page.evaluate(() => document.getElementById('gear').click());
     ok(await T.visible(page, '#dlg'), '暫停裡可以開設定');
     ok(await T.txt(page, '#dlg .card > div:first-child') === '基本設定 Ajustes', '設定標題（繁／西）', await T.txt(page, '#dlg .card > div:first-child'));
     await page.click('#gLang .opt[data-v="en"]');
@@ -125,9 +130,9 @@ const BOPOMOFO = /[ㄅ-ㄯ]/;
   console.log('\n[L3] 主選單換語言：重新整理後仍記得');
   { const { page, ctx } = await T.open(browser);
     await page.click('#menuGear'); await page.click('#gLang .opt[data-v="en"]'); await page.click('#gPhon .opt[data-v="zhuyin"]'); await page.click('#dlgDone');
-    ok(await T.txt(page, '#startBtn') === '開始飛 Start', '主選單立刻變英文', await T.txt(page, '#startBtn'));
+    ok(await T.txt(page, '#startBtn') === '開始遊戲 Start', '主選單立刻變英文', await T.txt(page, '#startBtn'));
     await page.reload(); await page.waitForFunction(() => !!window.__dragon); await page.waitForTimeout(500);
-    ok(await T.txt(page, '#startBtn') === '開始飛 Start', '重新整理後仍是英文');
+    ok(await T.txt(page, '#startBtn') === '開始遊戲 Start', '重新整理後仍是英文');
     const sv = await T.settings(page); ok(sv && sv.lang === 'en' && sv.phon === 'zhuyin', '共用設定記得 英文＋注音', sv);
     await ctx.close(); }
 

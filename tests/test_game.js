@@ -57,7 +57,7 @@ const db = (page, pid) => page.evaluate(p => window.__DB[p], pid);
     ok(await page.$eval('#teacherLink', e => e.classList.contains('ghost') && e.tagName === 'A'), '空心外框（ghost）的連結');
     ok((await txt(page, '#teacherLink')) === '老師管理中心 Centro para profesores', '雙行：中文＋西文', await txt(page, '#teacherLink'));
     const box = await page.$eval('#teacherLink', e => { const r = e.getBoundingClientRect(); const s = document.getElementById('startBtn').getBoundingClientRect(); return { top: r.top, startBottom: s.bottom, h: r.height, right: r.right, vw: innerWidth }; });
-    ok(box.top >= box.startBottom && box.h >= 44 && box.right <= box.vw, '在「開始飛」下面、高度夠按、沒有超出畫面', box);
+    ok(box.top >= box.startBottom && box.h >= 44 && box.right <= box.vw, '在「開始遊戲」下面、高度夠按、沒有超出畫面', box);
     ok((await themes(page)).length === 3, '公開頁只有 3 個主題', await themes(page));
     ok(errors.length === 0, '沒有程式錯誤', errors);
     await ctx.close(); }
@@ -65,7 +65,7 @@ const db = (page, pid) => page.evaluate(p => window.__DB[p], pid);
   console.log('\n[2] 設定：預設值、繁簡、語言');
   { const { page, ctx } = await open(browser);
     ok(await settings(page) === null, '沒有存過設定時用預設值（繁體、中＋西、拼音），不強迫寫入');
-    ok((await txt(page, '#startBtn')) === '開始飛 Empezar', '預設介面：繁體＋西文', await txt(page, '#startBtn'));
+    ok((await txt(page, '#startBtn')) === '開始遊戲 Empezar', '預設介面：繁體＋西文', await txt(page, '#startBtn'));
     await ctx.close(); }
   { const { page, ctx } = await open(browser, { ls: { [KEY]: JSON.stringify({ v: 1, script: 'trad', lang: 'es', phon: 'pinyin', rate: 'fast', other: 'keep' }) } });
     await page.click('#menuGear');
@@ -74,11 +74,11 @@ const db = (page, pid) => page.evaluate(p => window.__DB[p], pid);
     const s = await settings(page);
     ok(s && s.script === 'simp' && s.lang === 'es', '在設定改成简体後，共用設定也跟著改', s);
     ok(s && s.rate === 'fast' && s.other === 'keep', '不會動到別款遊戲用的語速與其他欄位', s);
-    ok((await txt(page, '#startBtn')).startsWith('开始飞'), '主選單立刻變簡體', await txt(page, '#startBtn'));
+    ok((await txt(page, '#startBtn')).startsWith('开始游戏'), '主選單立刻變簡體', await txt(page, '#startBtn'));
     await ctx.close(); }
   { const { page, ctx } = await open(browser, { ls: { [KEY]: JSON.stringify({ v: 1, script: 'simp', lang: 'en', phon: 'zhuyin', rate: 'fast' }) } });
     ok((await txt(page, '#teacherLink')) === '老师管理中心 Teacher center', '簡體＋英文：老师管理中心／Teacher center', await txt(page, '#teacherLink'));
-    ok((await txt(page, '#startBtn')).startsWith('开始飞'), '開始按鈕是簡體', await txt(page, '#startBtn'));
+    ok((await txt(page, '#startBtn')).startsWith('开始游戏'), '開始按鈕是簡體', await txt(page, '#startBtn'));
     await ctx.close(); }
   { const { page, ctx } = await open(browser, { ls: { [KEY]: JSON.stringify({ v: 1, script: 'trad', lang: 'zh', phon: 'off', rate: 'normal' }) } });
     ok((await txt(page, '#teacherLink')) === '老師管理中心', '只有中文：一行，沒有小字', await txt(page, '#teacherLink'));
